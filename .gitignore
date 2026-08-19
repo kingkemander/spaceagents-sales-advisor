@@ -1,0 +1,5 @@
+**/__pycache__/
+*.py[cod]
+.DS_Store
+SA销售工作区/
+dist/
