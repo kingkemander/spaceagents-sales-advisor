@@ -16,30 +16,36 @@ https://github.com/kingkemander/spaceagents-sales-advisor
 
 ### 方式二：上传 ZIP
 
-在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.1.1.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。
+在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.2.0.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。
 
-仓库遵循通用 Agent Skills 目录约定：
+仓库采用“一个插件、一个 Skill 入口、多个内部流程”的结构：
 
 ```text
 .claude-plugin/
   plugin.json
 skills/
   sa-sales-advisor/SKILL.md
-  ingest-customer-materials/SKILL.md
-  maintain-customer-memory/SKILL.md
-  learn-sales-voice/SKILL.md
-  plan-daily-followups/SKILL.md
-  draft-sales-reply/SKILL.md
+sa_sales_advisor/
+  cli.py
+  init_workspace.py
+  ingest_store.py
+  memory_store.py
+  render_dashboard.py
+  templates/dashboard-template.html
+playbooks/
+  ingest-customer-materials/
+  maintain-customer-memory/
+  learn-sales-voice/
+  plan-daily-followups/
+  draft-sales-reply/
 ```
 
 ## 包含能力
 
-- `sa-sales-advisor`：总入口和多技能路由。
-- `ingest-customer-materials`：直接接收材料、转换 Markdown、客户匹配与确认入库。
-- `maintain-customer-memory`：更新简明客户卡片、当前状态和下一步计划。
-- `learn-sales-voice`：从销售本人真实表达中学习个人口吻，生成可修改的 `sales-soul.md`。
-- `plan-daily-followups`：生成每日优先级、提醒文字和离线 HTML 销售作战台。
-- `draft-sales-reply`：结合企业知识、客户画像和个人口吻生成三种跟进草稿。
+- Space Agents 菜单里只显示 `sa-sales-advisor` 一个 Skill。
+- 该入口根据用户意图自动读取五个内部 Playbook，不需要用户选择子技能。
+- Python 运行包、HTML 模板和规则文件位于插件根目录，不作为 Skill 附件安装。
+- 支持材料入库、客户记忆、个人口吻、每日跟进看板和回复草稿五类流程。
 
 ## 第一次测试
 
@@ -64,10 +70,10 @@ skills/
 
 ## 运行要求
 
-- Space Agents 能识别通用 `SKILL.md` 技能包。
+- Space Agents 能安装带 `.claude-plugin/plugin.json` 的 Claude Code 插件。
 - 运行环境提供 Python 3，用于客户索引和 HTML 看板生成。
 - 运行环境允许在当前项目目录创建文件。
 
 ## 版本
 
-当前版本：`v0.1.1`。已增加 Space Agents GitHub 插件安装入口要求的 `.claude-plugin/plugin.json`，建议先使用脱敏客户资料测试。
+当前版本：`v0.2.0`。已改为与 `envcad` 相同的单 Skill 插件结构：清单只声明一个入口，Python、模板和内部流程位于插件根目录。

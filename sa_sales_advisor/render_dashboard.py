@@ -75,7 +75,7 @@ def main() -> int:
     dashboard_dir.mkdir(parents=True, exist_ok=True)
     (dashboard_dir / "dashboard-data.json").write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    template = Path(__file__).resolve().parent.parent / "assets/dashboard-template.html"
+    template = Path(__file__).resolve().parent / "templates/dashboard-template.html"
     html = template.read_text(encoding="utf-8")
     html = html.replace("__DASHBOARD_DATA_JSON__", json.dumps(data, ensure_ascii=False).replace("</", "<\\/"))
     html = html.replace("__GENERATED_AT__", generated_at)

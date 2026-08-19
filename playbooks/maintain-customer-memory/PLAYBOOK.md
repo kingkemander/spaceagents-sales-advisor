@@ -15,7 +15,7 @@ description: 把销售已确认的新材料和反馈合并进指定客户的动�
 4. 将确认后的字段写成 JSON patch 文件，运行：
 
 ```bash
-python3 scripts/customer_store.py update --workspace "<工作区>" --customer-id "<ID>" --patch-file "<patch.json>"
+python3 "${CLAUDE_PLUGIN_ROOT}/sa_sales_advisor/cli.py" memory update --workspace "<工作区>" --customer-id "<ID>" --patch-file "<patch.json>"
 ```
 
 5. 脚本自动刷新 `customer-card.md`、`current-status.md` 和 `follow-up-plan.md`。
