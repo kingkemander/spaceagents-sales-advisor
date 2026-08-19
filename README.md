@@ -16,11 +16,13 @@ https://github.com/kingkemander/spaceagents-sales-advisor
 
 ### 方式二：上传 ZIP
 
-在 GitHub Releases 下载 `spaceagents-sales-advisor-v0.1.0.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。
+在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.1.1.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。
 
 仓库遵循通用 Agent Skills 目录约定：
 
 ```text
+.claude-plugin/
+  plugin.json
 skills/
   sa-sales-advisor/SKILL.md
   ingest-customer-materials/SKILL.md
@@ -68,4 +70,4 @@ skills/
 
 ## 版本
 
-当前版本：`v0.1.0`。这是用于真实场景测试的第一版，建议先使用脱敏客户资料。
+当前版本：`v0.1.1`。已增加 Space Agents GitHub 插件安装入口要求的 `.claude-plugin/plugin.json`，建议先使用脱敏客户资料测试。

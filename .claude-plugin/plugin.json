@@ -1,0 +1,18 @@
+{
+  "name": "spaceagents-sales-advisor",
+  "version": "0.1.1",
+  "description": "面向房产、汽车、写字楼和产业园区销售的本地客户记忆、每日跟进与个性化回复技能包。",
+  "author": {
+    "name": "SpaceAgents"
+  },
+  "homepage": "https://github.com/kingkemander/spaceagents-sales-advisor",
+  "repository": "https://github.com/kingkemander/spaceagents-sales-advisor",
+  "license": "MIT",
+  "keywords": [
+    "sales",
+    "customer-memory",
+    "follow-up",
+    "local-first",
+    "spaceagents"
+  ]
+}
