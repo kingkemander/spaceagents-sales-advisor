@@ -1,60 +1,73 @@
 ---
 name: sa-sales-advisor
-description: 统一入口的本地销售 AI 军师。用户首次使用、直接上传客户会议纪要或聊天记录、要求建立客户档案、更新客户画像、学习个人口吻、查询今天跟谁、生成销售作战台或起草客户回复时使用。适用于房产、汽车、写字楼、产业园区及其他长周期顾问式销售；不连接 CRM 或聊天平台。
-license: MIT
-metadata:
-  version: "0.2.0"
-  homepage: https://github.com/kingkemander/spaceagents-sales-advisor
-  author: SpaceAgents
+description: 统一入口的本地销售 AI 军师。用户首次使用、上传客户会议纪要或聊天记录、建立客户档案、更新客户画像、学习个人口吻、查询今天跟谁、生成销售作战台或起草客户回复时使用。适用于房产、汽车、写字楼、产业园区及其他长周期顾问式销售；不连接 CRM 或聊天平台。首次调用时自动从固定 GitHub Release 下载并校验运行时。
 ---
 
 # SA 销售军师
 
-这是插件唯一对外入口。不要要求用户在六个技能之间选择；根据意图自动执行插件内部流程。
+仅向用户提供一个入口。自动完成运行时准备，再根据意图执行材料入库、客户记忆、口吻学习、每日跟进或回复起草流程。
 
-插件根目录由 `${CLAUDE_PLUGIN_ROOT}` 表示。运行工具时始终使用完整路径，不假设当前工作目录等于插件目录：
+## 准备运行时
 
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/sa_sales_advisor/cli.py" --help
+不要使用 `${CLAUDE_PLUGIN_ROOT}`，不要引用开发者电脑路径，也不要要求用户手工复制插件文件。
+
+以当前 Space Agents 工作区为 `<工作区>`。运行时固定安装到：
+
+```text
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.3.0/
 ```
 
-运行时只依赖 Python 标准库，无需用户执行 `pip install`。
+每次触发时，先检查以下文件是否存在：
+
+```text
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.3.0/sa_sales_advisor/cli.py
+```
+
+如果不存在，自动执行以下两步。优先使用 `python3`；环境只有 `python` 时替换命令名。
+
+第一步，下载固定版本的引导器并验证 SHA-256。把 `<工作区>` 替换为当前工作区绝对路径：
+
+```bash
+python3 -c "import hashlib,pathlib,urllib.request; u='https://raw.githubusercontent.com/kingkemander/spaceagents-sales-advisor/v0.3.0/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.3.0.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='794b92c8f2348778a807a06ad4a65f771f46ee46677d58d643d3166affc6e825', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
+```
+
+第二步，运行引导器。它会下载并校验运行时包，然后返回真实 CLI 路径：
+
+```bash
+python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.3.0.py" --workspace "<工作区>"
+```
+
+如果下载、校验或解压失败，停止操作并把原始错误告诉用户；不要绕过校验，不要退回任何本机绝对路径。已安装且校验完整时，引导器是幂等的，不重复下载。
+
+后续使用：
+
+```text
+<运行时根目录> = <工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.3.0
+<CLI> = <运行时根目录>/sa_sales_advisor/cli.py
+<销售数据> = <工作区>/SA销售工作区
+```
 
 ## 第一次使用
 
-1. 在当前工作区创建 `SA销售工作区/`，不得扫描工作区外目录：
+运行：
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/sa_sales_advisor/cli.py" init --root "<当前工作区>/SA销售工作区"
+python3 "<CLI>" init --root "<销售数据>"
 ```
 
-2. 告诉用户可以直接上传会议纪要、录音转写、聊天记录、截图、PDF、Word 或客户文件，无需先填表。
-3. 只有客户归属和新增事实得到用户确认后，才写入正式客户档案。
+告诉用户可以直接上传会议纪要、录音转写、聊天记录、截图、PDF、Word 或客户文件，无需预先填表。只在客户归属和新增事实得到确认后写入正式档案。
 
 ## 自动路由
 
-按当前请求读取对应内部操作手册；这些文件不是独立 Skill，不向用户展示六个入口：
+根据当前请求只读取对应内部操作手册，并把其中的 `<运行时根目录>` 替换为上述真实路径：
 
-- 材料上传、Markdown 转换、客户匹配与确认入库：`${CLAUDE_PLUGIN_ROOT}/playbooks/ingest-customer-materials/PLAYBOOK.md`
-- 客户画像、当前状态和跟进计划更新：`${CLAUDE_PLUGIN_ROOT}/playbooks/maintain-customer-memory/PLAYBOOK.md`
-- 学习或修改销售个人口吻：`${CLAUDE_PLUGIN_ROOT}/playbooks/learn-sales-voice/PLAYBOOK.md`
-- 每日跟进排序、提醒和 HTML 作战台：`${CLAUDE_PLUGIN_ROOT}/playbooks/plan-daily-followups/PLAYBOOK.md`
-- 根据企业知识、客户画像和个人口吻起草回复：`${CLAUDE_PLUGIN_ROOT}/playbooks/draft-sales-reply/PLAYBOOK.md`
+- 材料上传、Markdown 转换、客户匹配与确认入库：`<运行时根目录>/playbooks/ingest-customer-materials/PLAYBOOK.md`
+- 客户画像、当前状态和跟进计划：`<运行时根目录>/playbooks/maintain-customer-memory/PLAYBOOK.md`
+- 学习或修改销售个人口吻：`<运行时根目录>/playbooks/learn-sales-voice/PLAYBOOK.md`
+- 每日跟进、提醒和 HTML 作战台：`<运行时根目录>/playbooks/plan-daily-followups/PLAYBOOK.md`
+- 根据企业知识、客户画像和个人口吻起草回复：`<运行时根目录>/playbooks/draft-sales-reply/PLAYBOOK.md`
 
-一个请求涉及多个阶段时，按“材料确认入库 → 更新客户记忆 → 规划下一步 → 起草回复”的顺序执行，不让用户重复提供已存在的信息。
-
-## 本地运行入口
-
-所有确定性操作使用同一个 CLI：
-
-```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/sa_sales_advisor/cli.py" customer create --workspace "<工作区>/SA销售工作区" --name "<客户名>" --owner "<销售>"
-python3 "${CLAUDE_PLUGIN_ROOT}/sa_sales_advisor/cli.py" memory update --workspace "<工作区>/SA销售工作区" --customer-id "<客户ID>" --patch-file "<patch.json>"
-python3 "${CLAUDE_PLUGIN_ROOT}/sa_sales_advisor/cli.py" dashboard --workspace "<工作区>/SA销售工作区"
-python3 "${CLAUDE_PLUGIN_ROOT}/sa_sales_advisor/cli.py" customer validate --workspace "<工作区>/SA销售工作区"
-```
-
-不要让用户手工输入上述命令；由智能体根据操作手册执行。
+一个请求涉及多个阶段时，按“材料确认入库 → 更新客户记忆 → 规划下一步 → 起草回复”的顺序执行，不要求用户选择子技能，不让用户重复提供已有信息。
 
 ## 固定边界
 
@@ -68,4 +81,4 @@ python3 "${CLAUDE_PLUGIN_ROOT}/sa_sales_advisor/cli.py" customer validate --work
 
 ## 完成标准
 
-每次操作都说明：处理了什么、写入哪些相对路径、哪些内容仍待确认、下一步最小行动是什么。生成看板时返回 `SA销售工作区/dashboard/index.html` 的可点击路径。
+每次操作说明：处理了什么、写入哪些相对路径、哪些内容仍待确认、下一步最小行动是什么。生成看板时返回 `<销售数据>/dashboard/index.html` 的可点击路径。

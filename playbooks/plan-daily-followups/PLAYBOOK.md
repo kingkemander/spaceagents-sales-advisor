@@ -11,11 +11,11 @@ description: 读取本地客户索引和客户状态，按承诺到期、跟进�
 2. 优先级依次考虑：已逾期承诺、今天到期、未来两天到期、明确客户活跃信号、长时间无进展、资料缺失和过度打扰风险。
 3. 不为没有事实依据的客户生成强行催单建议。
 4. 为每个入选客户给出：今天是否该跟、原因、下一步、风险、回复草稿和证据。
-5. 必要时读取 `${CLAUDE_PLUGIN_ROOT}/playbooks/draft-sales-reply/PLAYBOOK.md` 补充草稿，并保持人工发送边界。
+5. 必要时读取 `<运行时根目录>/playbooks/draft-sales-reply/PLAYBOOK.md` 补充草稿，并保持人工发送边界。
 6. 运行：
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/sa_sales_advisor/cli.py" dashboard --workspace "<当前项目>/SA销售工作区"
+python3 "<运行时根目录>/sa_sales_advisor/cli.py" dashboard --workspace "<当前项目>/SA销售工作区"
 ```
 
 7. 返回一条不超过 120 字的提醒，再给出 `dashboard/index.html` 的可点击路径。

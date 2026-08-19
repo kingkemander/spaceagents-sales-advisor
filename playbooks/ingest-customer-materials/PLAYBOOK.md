@@ -12,7 +12,7 @@ description: 接收销售直接上传的录音纪要、聊天记录、截图、P
 如果 `SA销售工作区/indexes/customer-index.json` 不存在，运行：
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/sa_sales_advisor/cli.py" init --root "<当前项目>/SA销售工作区"
+python3 "<运行时根目录>/sa_sales_advisor/cli.py" init --root "<当前项目>/SA销售工作区"
 ```
 
 只在当前项目内初始化，不扫描其他目录。
@@ -25,10 +25,10 @@ python3 "${CLAUDE_PLUGIN_ROOT}/sa_sales_advisor/cli.py" init --root "<当前项�
 4. 读取 `indexes/customer-index.json`，基于公司全称、别名、联系人和已有项目寻找候选客户。不得只凭简称自动归档。
 5. 展示一张入库确认卡：推荐客户、匹配依据、新增事实、冲突、待办、目标路径和不会写入的内容。
 6. 未获得明确确认时，把草稿保留为待处理，不更新正式索引和客户文件。
-7. 用户选择新客户时，运行 `python3 "${CLAUDE_PLUGIN_ROOT}/sa_sales_advisor/cli.py" customer create` 创建稳定 ID 和目录。
+7. 用户选择新客户时，运行 `python3 "<运行时根目录>/sa_sales_advisor/cli.py" customer create` 创建稳定 ID 和目录。
 8. 用户确认后，复制原件到 `sources/original/`，保存 Markdown 到 `sources/markdown/`，创建时间线记录，再运行 `register-material` 登记索引和流水。
-9. 继续执行 `${CLAUDE_PLUGIN_ROOT}/playbooks/maintain-customer-memory/PLAYBOOK.md`，根据本次已确认事实更新客户状态。
-10. 运行 `python3 "${CLAUDE_PLUGIN_ROOT}/sa_sales_advisor/cli.py" customer validate`，确认 customer_id、路径和索引一致。
+9. 继续执行 `<运行时根目录>/playbooks/maintain-customer-memory/PLAYBOOK.md`，根据本次已确认事实更新客户状态。
+10. 运行 `python3 "<运行时根目录>/sa_sales_advisor/cli.py" customer validate`，确认 customer_id、路径和索引一致。
 
 ## 多客户与不确定情况
 

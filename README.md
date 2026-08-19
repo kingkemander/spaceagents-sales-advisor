@@ -16,7 +16,7 @@ https://github.com/kingkemander/spaceagents-sales-advisor
 
 ### 方式二：上传 ZIP
 
-在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.2.0.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。
+在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.3.0.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。
 
 仓库采用“一个插件、一个 Skill 入口、多个内部流程”的结构：
 
@@ -38,13 +38,16 @@ playbooks/
   learn-sales-voice/
   plan-daily-followups/
   draft-sales-reply/
+bootstrap.py
 ```
+
+Space Agents 当前只导入 `SKILL.md` 也可以正常使用：首次调用时，入口 Skill 会从固定的 GitHub Release 下载经过 SHA-256 校验的运行时包，安装到当前工作区的 `.spaceagents/plugins/sa-sales-advisor/`。不依赖 `${CLAUDE_PLUGIN_ROOT}`，也不依赖开发者电脑路径。
 
 ## 包含能力
 
 - Space Agents 菜单里只显示 `sa-sales-advisor` 一个 Skill。
 - 该入口根据用户意图自动读取五个内部 Playbook，不需要用户选择子技能。
-- Python 运行包、HTML 模板和规则文件位于插件根目录，不作为 Skill 附件安装。
+- Python 运行包、HTML 模板和规则文件由入口 Skill 在首次调用时自动下载并校验。
 - 支持材料入库、客户记忆、个人口吻、每日跟进看板和回复草稿五类流程。
 
 ## 第一次测试
@@ -76,4 +79,4 @@ playbooks/
 
 ## 版本
 
-当前版本：`v0.2.0`。已改为与 `envcad` 相同的单 Skill 插件结构：清单只声明一个入口，Python、模板和内部流程位于插件根目录。
+当前版本：`v0.3.0`。这是 Space Agents 自举兼容版：只安装一个 Skill 即可，首次调用自动准备完整运行时，后续离线复用已安装文件。
