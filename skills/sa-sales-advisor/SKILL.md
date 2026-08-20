@@ -5,7 +5,7 @@ description: 统一入口的本地销售 AI 军师。用户首次使用、上传
 
 # SA 销售军师
 
-仅向用户提供一个入口。自动完成运行时准备，再根据意图执行材料入库、客户记忆、口吻学习、每日跟进或回复起草流程。
+仅向用户提供一个入口。自动完成运行时准备，再根据意图执行材料入库、客户记忆、口吻学习、每日跟进、回复起草或销售成长流程。
 
 ## 准备运行时
 
@@ -14,13 +14,13 @@ description: 统一入口的本地销售 AI 军师。用户首次使用、上传
 以当前 Space Agents 工作区为 `<工作区>`。运行时固定安装到：
 
 ```text
-<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.5.0/
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.6.0/
 ```
 
 每次触发时，先检查以下文件是否存在：
 
 ```text
-<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.5.0/sa_sales_advisor/cli.py
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.6.0/sa_sales_advisor/cli.py
 ```
 
 如果不存在，自动执行以下两步。优先使用 `python3`；环境只有 `python` 时替换命令名。
@@ -28,13 +28,13 @@ description: 统一入口的本地销售 AI 军师。用户首次使用、上传
 第一步，下载固定版本的引导器并验证 SHA-256。把 `<工作区>` 替换为当前工作区绝对路径：
 
 ```bash
-python3 -c "import hashlib,pathlib,urllib.request; u='https://raw.githubusercontent.com/kingkemander/spaceagents-sales-advisor/v0.5.0/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.5.0.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='0561fed8b66adb69dd2fa7969f3e0b24d1f6d22408f2d99e44931bb00f4086f8', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
+python3 -c "import hashlib,pathlib,urllib.request; u='https://raw.githubusercontent.com/kingkemander/spaceagents-sales-advisor/v0.6.0/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.6.0.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='6bcb22fac0e7efa99d162311a3ea6101514be8e201868dee2a15cbd929f1a4ba', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
 ```
 
 第二步，运行引导器。它会下载并校验运行时包，然后返回真实 CLI 路径：
 
 ```bash
-python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.5.0.py" --workspace "<工作区>"
+python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.6.0.py" --workspace "<工作区>"
 ```
 
 如果下载、校验或解压失败，停止操作并把原始错误告诉用户；不要绕过校验，不要退回任何本机绝对路径。已安装且校验完整时，引导器是幂等的，不重复下载。
@@ -42,7 +42,7 @@ python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.5.0.py" 
 后续使用：
 
 ```text
-<运行时根目录> = <工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.5.0
+<运行时根目录> = <工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.6.0
 <CLI> = <运行时根目录>/sa_sales_advisor/cli.py
 <销售数据> = <工作区>/SA销售工作区
 ```
@@ -66,8 +66,9 @@ python3 "<CLI>" init --root "<销售数据>"
 - 学习或修改销售个人口吻：`<运行时根目录>/playbooks/learn-sales-voice/PLAYBOOK.md`
 - 每日跟进、提醒和 HTML 作战台：`<运行时根目录>/playbooks/plan-daily-followups/PLAYBOOK.md`
 - 根据企业知识、客户画像和个人口吻起草回复：`<运行时根目录>/playbooks/draft-sales-reply/PLAYBOOK.md`
+- 相似场景、方法卡与销售复盘成长：`<运行时根目录>/playbooks/coach-sales-growth/PLAYBOOK.md`
 
-一个请求涉及多个阶段时，按“材料确认入库 → 更新客户记忆 → 规划下一步 → 起草回复”的顺序执行，不要求用户选择子技能，不让用户重复提供已有信息。
+一个请求涉及多个阶段时，按“材料确认入库 → 更新客户记忆 → 匹配方法与相似案例 → 规划下一步 → 按个人口吻起草回复 → 沟通后复盘”的顺序执行，不要求用户选择子技能，不让用户重复提供已有信息。
 
 ## 固定边界
 

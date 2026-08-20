@@ -5,6 +5,7 @@ SA销售工作区/
 ├── config/
 │   ├── company-profile.md
 │   ├── sales-soul.md
+│   ├── sales-method-library.md
 │   └── reminder-settings.json
 ├── inbox/{pending,confirmed,rejected}/
 ├── indexes/
@@ -22,6 +23,9 @@ SA销售工作区/
 ├── dashboard/
 │   ├── dashboard-data.json
 │   └── index.html
+├── growth/
+│   ├── weekly-focus.md
+│   └── reviews/
 └── logs/
 ```
 

@@ -36,6 +36,7 @@ def main() -> int:
         "indexes",
         "customers",
         "dashboard",
+        "growth/reviews",
         "logs",
     ]:
         path = root / rel
@@ -47,6 +48,8 @@ def main() -> int:
     files = {
         "config/company-profile.md": "# 企业销售知识配置\n\n## 企业名称\n\n## 销售业务\n\n## 产品与项目资料位置\n\n## 价格与承诺边界\n\n## 待确认\n",
         "config/sales-soul.md": "---\nschema_version: 1\nstatus: provisional\nsample_messages: 0\nsample_meetings: 0\nupdated_at: \"\"\n---\n\n# 销售表达灵魂\n\n## 整体气质\n\n## 称呼习惯\n\n## 语言特征\n\n## 跟进习惯\n\n## 异议处理\n\n## 禁止表达\n\n## 已确认示例\n\n## 待确认\n",
+        "config/sales-method-library.md": "# 企业销售方法库\n\n## 已采用方法\n\n- 价值前置\n- 异议拆解\n- 双路径推进\n- 决策链地图\n- 承诺闭环\n- 沉默唤醒\n\n## 企业自定义案例\n\n仅添加已脱敏、已获授权的真实案例。\n\n## 禁止方法\n\n- 虚假稀缺\n- 隐瞒条件\n- 威胁或高压成交\n- 未经授权的承诺\n",
+        "growth/weekly-focus.md": "# 本周成长焦点\n\n## 主要训练项\n\n待首次复盘后生成。\n\n## 可观察标准\n\n## 本周复盘\n",
         "config/reminder-settings.json": json.dumps(
             {
                 "schema_version": 1,
