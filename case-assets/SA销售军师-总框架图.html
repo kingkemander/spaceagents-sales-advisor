@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SA销售军师｜总框架图</title>
+<style>
+  *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}
+  body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Microsoft YaHei",sans-serif;color:#111d34;background:#eef3fb}
+  .page{position:relative;width:1920px;height:1080px;padding:54px 64px 46px;overflow:hidden;background:radial-gradient(circle at 12% 0%,rgba(109,147,255,.25),transparent 31%),radial-gradient(circle at 90% 10%,rgba(77,219,207,.18),transparent 27%),linear-gradient(155deg,#f8faff 0%,#edf3fb 53%,#f6f9ff 100%)}
+  .art{position:absolute;inset:270px -80px -120px;background:url('./framework-background.png') center bottom/cover no-repeat;opacity:.12;filter:saturate(.75)}
+  .mesh{position:absolute;inset:0;background-image:linear-gradient(rgba(71,94,132,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(71,94,132,.035) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(to bottom,transparent 2%,#000 22%,#000 80%,transparent)}
+  .content{position:relative;z-index:2}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:27px}
+  .eyebrow{font-size:18px;font-weight:800;letter-spacing:.16em;color:#1e61e8;margin-bottom:12px}
+  h1{font-size:48px;line-height:1.12;letter-spacing:-.045em;margin:0;color:#0d1830}
+  .subtitle{font-size:20px;color:#65738b;margin-top:14px;letter-spacing:.01em}
+  .brand{display:flex;align-items:center;gap:15px;padding:13px 18px;border:1px solid rgba(255,255,255,.9);border-radius:22px;background:rgba(255,255,255,.55);box-shadow:0 16px 40px rgba(50,78,124,.08);backdrop-filter:blur(20px)}
+  .brandmark{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:linear-gradient(145deg,#164bce,#4e88ff);color:white;font-size:22px;box-shadow:0 10px 24px rgba(35,94,225,.25)}
+  .brand b{display:block;font-size:18px}.brand span{display:block;font-size:13px;color:#7a879c;margin-top:3px}
+  .problembar{display:grid;grid-template-columns:200px repeat(4,1fr);gap:12px;margin-bottom:22px}
+  .problemtitle{padding:17px 20px;border-radius:19px;color:white;background:linear-gradient(135deg,#15233c,#253b61);box-shadow:0 14px 30px rgba(25,44,76,.15)}
+  .problemtitle small{display:block;color:#9eb9ef;font-weight:800;letter-spacing:.12em}.problemtitle b{display:block;font-size:21px;margin-top:6px}
+  .problem{padding:16px 18px;border:1px solid rgba(255,255,255,.95);border-radius:19px;background:rgba(255,255,255,.58);box-shadow:0 13px 34px rgba(47,73,115,.07);backdrop-filter:blur(16px)}
+  .problem b{font-size:17px}.problem p{font-size:14px;line-height:1.5;color:#6d7990;margin:6px 0 0}
+  .flowtitle{display:flex;align-items:center;gap:14px;margin:0 0 13px}.flowtitle h2{font-size:23px;margin:0}.flowtitle span{font-size:13px;color:#728098;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.68)}
+  .flow{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;position:relative;margin-bottom:20px}
+  .flow:before{content:"";position:absolute;left:7%;right:7%;top:38px;height:2px;background:linear-gradient(90deg,#2c67ee,#2bb7a9);opacity:.65}
+  .step{position:relative;min-height:220px;padding:18px 18px 16px;border:1px solid rgba(255,255,255,.95);border-radius:24px;background:rgba(255,255,255,.72);box-shadow:0 17px 42px rgba(41,70,117,.09);backdrop-filter:blur(18px)}
+  .stepnum{position:relative;display:grid;place-items:center;width:42px;height:42px;margin-bottom:16px;border-radius:50%;color:white;font-size:16px;font-weight:800;background:linear-gradient(145deg,#1d5be0,#48a5ff);box-shadow:0 8px 18px rgba(39,97,225,.24);border:4px solid rgba(255,255,255,.95)}
+  .step:nth-child(n+4) .stepnum{background:linear-gradient(145deg,#168f86,#4acbb9)}
+  .step h3{font-size:20px;margin:0 0 8px;letter-spacing:-.02em}.step p{font-size:14px;line-height:1.55;color:#65738a;margin:0}.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.tag{font-size:12px;color:#355681;border-radius:8px;padding:5px 7px;background:#edf4ff}.step:nth-child(n+4) .tag{color:#287166;background:#eaf8f4}
+  .engine{display:grid;grid-template-columns:1.15fr 2.25fr 1.2fr;gap:14px;margin-bottom:16px}
+  .enginecard{padding:19px 21px;border-radius:22px;border:1px solid rgba(255,255,255,.96);background:rgba(255,255,255,.67);box-shadow:0 15px 36px rgba(44,70,112,.08);backdrop-filter:blur(18px)}
+  .enginecard small{font-size:12px;font-weight:800;letter-spacing:.13em;color:#3d6cdc}.enginecard h3{font-size:19px;margin:6px 0 7px}.enginecard p{font-size:14px;line-height:1.5;color:#68758b;margin:0}.wisdom{background:linear-gradient(135deg,rgba(20,35,61,.94),rgba(36,62,99,.92));color:white}.wisdom small{color:#98b9ff}.wisdom h3{color:white}.wisdom p{color:#c5d2e5}.books{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.book{padding:5px 8px;border-radius:8px;background:rgba(255,255,255,.1);font-size:12px;color:#e8effd;border:1px solid rgba(255,255,255,.08)}
+  .footergrid{display:grid;grid-template-columns:1.65fr 1fr;gap:14px}
+  .outcomes,.principles{padding:17px 21px;border-radius:21px;background:rgba(255,255,255,.67);border:1px solid rgba(255,255,255,.95);box-shadow:0 14px 32px rgba(41,67,108,.075)}
+  .outcomes h3,.principles h3{font-size:17px;margin:0 0 11px}.outcomelist{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.outcome{font-size:13px;line-height:1.4;padding:10px 11px;border-radius:12px;background:#f0f5fd;color:#30435f}.outcome b{display:block;color:#172944;margin-bottom:3px}
+  .principlelist{display:flex;flex-wrap:wrap;gap:7px}.principle{font-size:12px;padding:7px 9px;border-radius:9px;background:#edf8f4;color:#276c61;font-weight:700}.boundary{font-size:11px;color:#7b8799;margin-top:10px}
+</style>
+</head>
+<body>
+<main class="page">
+  <div class="art"></div><div class="mesh"></div>
+  <div class="content">
+    <header class="header">
+      <div><div class="eyebrow">SA SALES ADVISOR · STANDARD CASE</div><h1>从客户资料，到每天可执行的销售判断</h1><div class="subtitle">一个入口、六步协同：让销售记得住客户、跟得上节奏、说得更专业，也更像自己</div></div>
+      <div class="brand"><div class="brandmark">⌁</div><div><b>SA 销售军师</b><span>本地客户记忆与行动系统</span></div></div>
+    </header>
+
+    <section class="problembar">
+      <div class="problemtitle"><small>WHY</small><b>销售真正的难题</b></div>
+      <div class="problem"><b>资料散落</b><p>录音、纪要、聊天截图和文件难以统一整理</p></div>
+      <div class="problem"><b>客户太多</b><p>很久前的承诺、节点和真实顾虑容易忘记</p></div>
+      <div class="problem"><b>跟进靠感觉</b><p>不知道今天该跟谁、为什么跟、如何推进</p></div>
+      <div class="problem"><b>回复不够专业</b><p>通用话术像 AI，既不贴合客户，也不像本人</p></div>
+    </section>
+
+    <div class="flowtitle"><h2>案例实现流程</h2><span>销售只需放入材料并确认，其余由多个能力自动协同</span></div>
+    <section class="flow">
+      <article class="step"><div class="stepnum">01</div><h3>材料归集</h3><p>按客户建立专属文件夹，统一放入会议纪要、录音转写、聊天记录、截图与业务文件。</p><div class="tags"><span class="tag">一客一档</span><span class="tag">直接放文件夹</span></div></article>
+      <article class="step"><div class="stepnum">02</div><h3>理解与整理</h3><p>识别长截图、图片、文档和对话关系，转为可检索 Markdown，按主题提取事实与待确认项。</p><div class="tags"><span class="tag">视觉理解</span><span class="tag">知识分类</span></div></article>
+      <article class="step"><div class="stepnum">03</div><h3>人工确认</h3><p>先确认客户归属、关键事实、冲突与写入范围；未经确认，不进入正式客户记忆。</p><div class="tags"><span class="tag">防止传错</span><span class="tag">事实不臆测</span></div></article>
+      <article class="step"><div class="stepnum">04</div><h3>动态客户记忆</h3><p>持续更新客户卡片、当前状态、真实顾虑、决策链、项目节点、时间线和下一步。</p><div class="tags"><span class="tag">长期记忆</span><span class="tag">持续更新</span></div></article>
+      <article class="step"><div class="stepnum">05</div><h3>每日销售作战台</h3><p>自动给出今天跟谁、为什么跟、怎么跟、有什么风险，并以美观页面集中呈现。</p><div class="tags"><span class="tag">优先级</span><span class="tag">日历提醒</span></div></article>
+      <article class="step"><div class="stepnum">06</div><h3>专业回复与策略</h3><p>结合企业事实、客户心理、销售方法、真实案例与个人口吻，给出可复制的高级回复。</p><div class="tags"><span class="tag">像资深销售</span><span class="tag">更像本人</span></div></article>
+    </section>
+
+    <section class="engine">
+      <article class="enginecard"><small>FACT LAYER</small><h3>真实证据层</h3><p>企业知识、客户材料、历史沟通与确认后的时间线。任何判断都先回到事实。</p></article>
+      <article class="enginecard wisdom"><small>PROFESSIONAL REASONING</small><h3>世界级销售与决策思想库</h3><p>不是套金句，而是按客户场景选择 1–2 个真正适用的思考框架，帮助销售理解客户为什么犹豫、谁在决策、下一步怎样降低阻力。</p><div class="books"><span class="book">SPIN Selling</span><span class="book">Challenger</span><span class="book">Trusted Advisor</span><span class="book">Getting to Yes</span><span class="book">JOLT</span><span class="book">Naval</span><span class="book">Gap Selling</span><span class="book">Strategic Selling</span></div></article>
+      <article class="enginecard"><small>PERSONAL VOICE</small><h3>销售个人表达层</h3><p>从本人聊天样本中学习称呼、句长、节奏和边界，由销售随时修改，最终回复自然、不端着。</p></article>
+    </section>
+
+    <section class="footergrid">
+      <article class="outcomes"><h3>销售每天最终得到什么</h3><div class="outcomelist"><div class="outcome"><b>客户不再遗忘</b>资料与进度随时找回</div><div class="outcome"><b>跟进不再错过</b>承诺、排期与沉默风险清楚</div><div class="outcome"><b>判断更有依据</b>知道客户真正卡在哪里</div><div class="outcome"><b>回复专业自然</b>既有方法，也符合本人习惯</div><div class="outcome"><b>经验持续复利</b>有效案例沉淀为企业方法</div></div></article>
+      <article class="principles"><h3>核心设计原则</h3><div class="principlelist"><span class="principle">事实先于判断</span><span class="principle">确认后再写入</span><span class="principle">一客一档</span><span class="principle">建议而非强制</span><span class="principle">内部过程不外露</span></div><div class="boundary">边界：不连接 CRM / 聊天平台 · 不自动发送 · 不虚构价格、库存或承诺</div></article>
+    </section>
+  </div>
+</main>
+</body>
+</html>

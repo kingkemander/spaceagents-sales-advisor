@@ -114,6 +114,7 @@
 
 - SPIN Methodology：Huthwaite International，https://www.huthwaiteinternational.com/spin-methodology
 - Challenger Methodology：Challenger，https://challengerinc.com/what-is-challenger-sales-methodology/
+- The JOLT Effect：Challenger，https://challengerinc.com/losing-to-customer-indecision/
 - Principled Negotiation：Harvard Program on Negotiation，https://www.pon.harvard.edu/daily/negotiation-skills-daily/principled-negotiation-focus-interests-create-value/
 - Principles of Persuasion：Influence at Work，https://www.influenceatwork.com/7-principles-of-persuasion/
 - Naval on Judgment：Naval，https://nav.al/judgment

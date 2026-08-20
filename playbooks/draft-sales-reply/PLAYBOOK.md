@@ -1,6 +1,6 @@
 ---
 name: draft-sales-reply
-description: 根据企业已确认知识、指定客户的最新档案与证据、以及销售本人 `sales-soul.md` 起草可复制的微信、短信、邮件或电话提纲。用户问“怎么回复客户”“帮我写跟进话术”“这个客户如何推进”或需要按个人口吻生成销售沟通草稿时使用。
+description: 根据企业已确认知识、指定客户的最新档案与证据、全球销售方法、客户决策心理和销售本人 `sales-soul.md`，分析客户为什么犹豫并起草可复制的微信、短信、邮件或电话提纲。用户问“客户怎么想”“客户为什么不回复”“怎么回复客户”“帮我写跟进话术”“这个客户如何推进”或需要按个人口吻生成销售沟通草稿时使用。
 ---
 
 # 销售回复起草
@@ -11,7 +11,7 @@ description: 根据企业已确认知识、指定客户的最新档案与证据�
 
 1. 企业事实：项目、产品、价格和政策的已确认资料。
 2. 客户事实：`customer.json`、客户卡和最近相关时间线。
-3. 销售方法：优先读取 [references/global-sales-wisdom.md](references/global-sales-wisdom.md)，再结合 `config/sales-method-library.md` 与 [references/scenario-method-cards.md](references/scenario-method-cards.md)。
+3. 专业推理：必须读取 [references/global-sales-wisdom.md](references/global-sales-wisdom.md) 和 [references/customer-decision-psychology.md](references/customer-decision-psychology.md)，再结合 `config/sales-method-library.md` 与 [references/scenario-method-cards.md](references/scenario-method-cards.md)。
 4. 相似案例：同类阶段、异议和结果的已脱敏复盘卡；没有真实案例时不得虚构。
 5. 个人口吻：`config/sales-soul.md`，作为最终表达层。
 
@@ -21,12 +21,13 @@ description: 根据企业已确认知识、指定客户的最新档案与证据�
 
 1. 确认目标客户和本次沟通目标。
 2. 概括客户当前状态及证据。
-3. 判断此时应推进、提供价值、补问信息、等待还是内部核实。
-4. 根据场景路由，从全球销售思想库中选择 1–2 个最相关框架，说明为什么适用、哪里不适用；方法用于内部思考，不直接写进客户消息。
-5. 给出最多三种策略：稳妥型、推进型、关系维护型；只保留真正不同的选项。
-6. 先写“高级销售会怎么想”，再按 `sales-soul.md` 改写成销售本人会说的话。禁止套用金句、书面腔和空泛话术。
-7. 给出首选草稿、必要时给短版，并注明发送后要观察的客户信号。
-8. 使用 [assets/reply-output-template.md](assets/reply-output-template.md) 输出人工审核点和本次成长要点。
+3. 依据客户明确表达和可观察行为，形成最多三个“可能的决策阻力”，分别写出支持证据、反证和最小验证问题；不得把推测写成客户心理事实。
+4. 判断此时应推进、提供价值、补问信息、降低风险、等待还是内部核实。
+5. 根据场景路由，从全球销售思想库中选择 1–2 个最相关框架，说明为什么适用、哪里不适用；方法用于内部思考，不直接写进客户消息。
+6. 给出最多三种策略：稳妥型、推进型、关系维护型；只保留真正不同的选项。
+7. 先写“高级销售会怎么想”，再按 `sales-soul.md` 改写成销售本人会说的话。禁止套用金句、书面腔和空泛话术。
+8. 给出首选草稿、必要时给短版，并注明发送后要观察的客户信号。
+9. 使用 [assets/reply-output-template.md](assets/reply-output-template.md) 输出人工审核点和本次成长要点。
 
 ## 强制边界
 
