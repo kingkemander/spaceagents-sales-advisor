@@ -16,12 +16,12 @@ from datetime import datetime
 from pathlib import Path
 
 
-VERSION = "0.3.0"
+VERSION = "0.4.0"
 RUNTIME_URL = (
     "https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/"
-    "v0.3.0/spaceagents-sales-advisor-runtime-v0.3.0.zip"
+    "v0.4.0/spaceagents-sales-advisor-runtime-v0.4.0.zip"
 )
-RUNTIME_SHA256 = "7e8860c0c2f7d684f9a37d6a1ee6d76f3eebd1f8fa2ce13067af5e1d8215fe22"
+RUNTIME_SHA256 = "e7b6ee1732960af21da586058d20f4ea160c367af6c66cae231ec5e19d36e2a7"
 
 
 def sha256_file(path: Path) -> str:
@@ -52,6 +52,7 @@ def extract_safely(archive: Path, destination: Path) -> None:
 def valid_runtime(path: Path) -> bool:
     required = [
         path / "sa_sales_advisor/cli.py",
+        path / "sa_sales_advisor/image_batch.py",
         path / "sa_sales_advisor/templates/dashboard-template.html",
         path / "playbooks/ingest-customer-materials/PLAYBOOK.md",
         path / "playbooks/maintain-customer-memory/PLAYBOOK.md",
@@ -64,7 +65,7 @@ def valid_runtime(path: Path) -> bool:
 
 
 def download(url: str, destination: Path) -> None:
-    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.3.0"})
+    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.4.0"})
     with urllib.request.urlopen(request, timeout=60) as response, destination.open("wb") as output:
         shutil.copyfileobj(response, output)
 
