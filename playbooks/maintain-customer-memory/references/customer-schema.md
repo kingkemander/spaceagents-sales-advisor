@@ -7,6 +7,9 @@
 - `name`
 - `aliases`
 - `owner`
+- `source_channel`: 抖音、转介绍、活动、官网、自然到访等首次来源
+- `company_name`
+- `job_title`
 - `industry`
 - `contacts`
 - `status`: `prospect`、`active`、`won`、`lost`、`paused`、`dormant`

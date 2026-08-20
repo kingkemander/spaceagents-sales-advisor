@@ -14,7 +14,11 @@ description: 从销售本人发送的聊天内容和可区分说话人的会议�
 3. 总结称呼、句长、正式程度、节奏、常用开场、常用收尾、缓和方式、推进方式、表情习惯和禁用表达。
 4. 提供 3–5 条原文示例，说明保留原因；不要生成性格诊断。
 5. 展示待写入摘要，用户确认后更新 `SA销售工作区/config/sales-soul.md`。
-6. 用户可以直接修改该文件；以后以用户修改后的内容为最高优先级。
+6. 同步更新 frontmatter 中的 `sample_messages`、`sample_meetings`、`status` 和 `updated_at`；样本数量只统计已确认属于销售本人的有效表达。
+7. 用户可以直接修改该文件；以后以用户修改后的内容为最高优先级。
+8. 更新后重新生成销售作战台，使“个人表达资料库”卡片立即显示新的成熟度、表达特征和下一步建议。
+
+用户可以随时说“把这段计入我的口吻样本”或“这句话不像我”，前者追加已确认样本，后者优先更新禁止表达或对应风格规则。不要在未获得本人同意时自动学习私人聊天。
 
 使用 [assets/sales-soul-template.md](assets/sales-soul-template.md)。详细判断规则见 [references/voice-analysis.md](references/voice-analysis.md)。
 

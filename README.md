@@ -16,7 +16,7 @@ https://github.com/kingkemander/spaceagents-sales-advisor
 
 ### 方式二：上传 ZIP
 
-在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.6.2.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。
+在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.7.0.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。
 
 仓库采用“一个插件、一个 Skill 入口、多个内部流程”的结构：
 
@@ -55,6 +55,8 @@ Space Agents 当前只导入 `SKILL.md` 也可以正常使用：首次调用时�
 - 用户询问“客户怎么想、为什么不回复”时，系统依据可观察证据生成可验证的决策阻力假设，并给出最小验证问题，不把心理推测当成事实。
 - “策略灵感”提供 SPIN Selling、Challenger、Trusted Advisor、Getting to Yes、JOLT、Naval 等方法的可选视角；不设课程、打卡、进度或评分。
 - 作战台顶部支持即时客户搜索；推荐阅读与经典销售思想可以直接打开权威方法介绍。
+- 客户卡会主动提示来源渠道、公司、职位、行业、需求、预算、周期和决策关系等资料缺口，并给出下一次最自然的补问方式。
+- “个人表达”资料库持续显示已确认的聊天/会议样本、口吻画像成熟度和六类表达特征；用户说“这句话不像我”后可继续修正。
 - 销售作战台采用克制的 Apple Liquid Glass 视觉语言，玻璃用于功能层，客户内容保持高可读性。
 
 ## 第一次测试
@@ -93,4 +95,4 @@ Space Agents 当前只导入 `SKILL.md` 也可以正常使用：首次调用时�
 
 ## 版本
 
-当前版本：`v0.6.2`。修复顶部搜索交互，增加可点击的权威学习入口，并把客户决策心理观察框架正式接入回复推理。
+当前版本：`v0.7.0`。新增销售个人表达资料库和客户资料缺口提醒，让回复口吻持续变准，并在跟进时主动提示最值得补充的信息。

@@ -12,7 +12,7 @@ from presentation import clean_public_value, contains_internal_language
 
 
 ALLOWED_FIELDS = {
-    "name", "aliases", "owner", "industry", "contacts", "status", "stage",
+    "name", "aliases", "owner", "source_channel", "company_name", "job_title", "industry", "contacts", "status", "stage",
     "intent_level", "needs", "budget", "timeline", "decision_chain", "objections",
     "competitors", "last_contact_at", "next_followup_at", "latest_update",
     "followup_reason", "next_action", "reply_suggestion", "risks", "won_details",
@@ -77,6 +77,9 @@ def render(customer_dir: Path, customer: dict) -> None:
 ## 身份信息
 
 - 行业：{customer.get('industry') or '未确认'}
+- 公司：{customer.get('company_name') or '未确认'}
+- 职位：{customer.get('job_title') or '未确认'}
+- 来源渠道：{customer.get('source_channel') or '未确认'}
 - 销售负责人：{customer.get('owner') or '未确认'}
 
 ### 联系人

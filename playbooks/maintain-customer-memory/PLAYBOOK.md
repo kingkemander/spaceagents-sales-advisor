@@ -11,6 +11,7 @@ description: 把销售已确认的新材料和反馈合并进指定客户的动�
 
 1. 根据 customer_id 读取 `customer.json`、客户卡片、最新状态和最近时间线。
 2. 区分新事实、销售判断、AI 建议和冲突信息。
+   同时检查 `source_channel`、`company_name`、`job_title`、`industry`、`needs`、`budget`、`timeline` 和 `decision_chain` 是否有新信息；缺失保持为空并进入待确认，不猜测补齐。
 3. 向用户展示将要修改的字段；涉及客户状态、成交、失单原因、金额、日期或承诺时必须确认。
 4. 将确认后的字段写成 JSON patch 文件，运行：
 
