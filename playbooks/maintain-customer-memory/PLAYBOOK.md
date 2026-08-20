@@ -29,5 +29,8 @@ python3 "<运行时根目录>/sa_sales_advisor/cli.py" memory update --workspace
 - 已成交客户显示项目进度、下一里程碑和交付风险。
 - 未成交客户显示明确原因、证据、是否可重新激活及触发条件。
 - 没有依据时写“未确认”，不填心理标签。
+- 客户卡、当前状态、跟进计划和销售作战台都是面向销售直接使用的最终页面。只能写确定的业务语言，不得出现 AI、识图、OCR、模型、插件、Skill、入库、文件路径、SHA、置信度、customer.json 或“新建档案”等内部处理措辞。
+- 内部识别路径、证据文件和技术日志只保留在 `evidence`、材料索引及日志中，不得拼接到 `latest_update`、`followup_reason`、`next_action`、`risks` 或回复话术。
+- 不写“AI 推断”。有充分事实依据的判断改写为销售建议；依据不足的内容放入“待确认”，不作为结论展示。
 
 字段约束见 [references/customer-schema.md](references/customer-schema.md)。展示结构见 [assets/customer-card-template.md](assets/customer-card-template.md)。

@@ -8,6 +8,8 @@ import json
 from datetime import datetime
 from pathlib import Path
 
+from presentation import clean_public_value, contains_internal_language
+
 
 ALLOWED_FIELDS = {
     "name", "aliases", "owner", "industry", "contacts", "status", "stage",
@@ -16,6 +18,7 @@ ALLOWED_FIELDS = {
     "followup_reason", "next_action", "reply_suggestion", "risks", "won_details",
     "lost_details", "unconfirmed", "evidence"
 }
+PUBLIC_FIELDS = ALLOWED_FIELDS - {"evidence"}
 
 
 def now_iso() -> str:
@@ -57,15 +60,22 @@ def find_customer(root: Path, customer_id: str) -> tuple[Path, dict, dict]:
 
 
 def render(customer_dir: Path, customer: dict) -> None:
+    customer = clean_public_value(customer)
     name = customer.get("name") or customer.get("customer_id")
     contacts = customer.get("contacts", [])
+    status_label = {
+        "prospect": "潜在客户", "active": "推进中", "won": "已成交",
+        "lost": "未成交", "paused": "暂缓", "dormant": "沉默",
+    }.get(customer.get("status"), customer.get("status") or "未确认")
+    intent_label = {
+        "high": "高意向", "medium": "中意向", "low": "低意向", "unknown": "待确认",
+    }.get(customer.get("intent_level"), customer.get("intent_level") or "待确认")
     card = f"""# {name}｜客户卡片
 
 > 更新时间：{customer.get('updated_at', '')}
 
 ## 身份信息
 
-- 客户 ID：{customer.get('customer_id', '')}
 - 行业：{customer.get('industry') or '未确认'}
 - 销售负责人：{customer.get('owner') or '未确认'}
 
@@ -75,9 +85,9 @@ def render(customer_dir: Path, customer: dict) -> None:
 
 ## 当前状态
 
-- 客户状态：{customer.get('status') or '未确认'}
+- 客户状态：{status_label}
 - 成交阶段：{customer.get('stage') or '未确认'}
-- 意向程度：{customer.get('intent_level') or 'unknown'}
+- 意向程度：{intent_label}
 - 最近沟通：{customer.get('last_contact_at') or '未确认'}
 - 下次跟进：{customer.get('next_followup_at') or '未确认'}
 - 最新变化：{customer.get('latest_update') or '未确认'}
@@ -118,7 +128,7 @@ def render(customer_dir: Path, customer: dict) -> None:
 """
     status = f"""# {name}｜当前状态
 
-- 状态：{customer.get('status') or '未确认'}
+- 状态：{status_label}
 - 阶段：{customer.get('stage') or '未确认'}
 - 最新变化：{customer.get('latest_update') or '未确认'}
 - 最近沟通：{customer.get('last_contact_at') or '未确认'}
@@ -147,6 +157,13 @@ def update(args: argparse.Namespace) -> None:
     unknown = sorted(set(patch) - ALLOWED_FIELDS)
     if unknown:
         raise SystemExit(f"unsupported patch fields: {', '.join(unknown)}")
+    dirty = sorted(key for key in PUBLIC_FIELDS if key in patch and contains_internal_language(patch[key]))
+    if dirty:
+        raise SystemExit(
+            "customer-facing fields contain internal processing language: "
+            + ", ".join(dirty)
+            + ". Rewrite them as direct business conclusions before updating."
+        )
     for key, value in patch.items():
         customer[key] = value
     customer["updated_at"] = now_iso()

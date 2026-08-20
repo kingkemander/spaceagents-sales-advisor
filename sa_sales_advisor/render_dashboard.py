@@ -8,6 +8,8 @@ import json
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
+from presentation import clean_public_text, clean_public_value
+
 
 def parse_day(value):
     if not value:
@@ -54,18 +56,17 @@ def main() -> int:
             "customer_id": customer.get("customer_id"),
             "name": customer.get("name"),
             "status": customer.get("status"),
-            "stage": customer.get("stage"),
+            "stage": clean_public_text(customer.get("stage"), "阶段待确认"),
             "intent_level": customer.get("intent_level"),
             "last_contact_at": customer.get("last_contact_at"),
             "next_followup_at": customer.get("next_followup_at"),
-            "latest_update": customer.get("latest_update"),
-            "followup_reason": customer.get("followup_reason"),
-            "next_action": customer.get("next_action"),
-            "reply_suggestion": customer.get("reply_suggestion"),
-            "risks": customer.get("risks", []),
+            "latest_update": clean_public_text(customer.get("latest_update"), "暂无新的业务进展"),
+            "followup_reason": clean_public_text(customer.get("followup_reason"), "按既定节奏持续跟进"),
+            "next_action": clean_public_text(customer.get("next_action"), "确认下一次沟通安排"),
+            "reply_suggestion": clean_public_text(customer.get("reply_suggestion")),
+            "risks": clean_public_value(customer.get("risks", [])),
             "bucket": bucket,
             "priority": score,
-            "source": str(path.relative_to(root)),
         }
         customers.append(customer_view)
     customers.sort(key=lambda x: (-x["priority"], x.get("next_followup_at") or "9999"))

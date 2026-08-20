@@ -19,7 +19,7 @@
 <body>
   <main class="shell">
     <header class="top">
-      <div><div class="eyebrow">SPACEAGENTS · SALES ADVISOR</div><h1>今日销售作战台</h1><div class="sub">只基于已确认的本地客户资料生成，不会自动发送消息。</div></div>
+      <div><div class="eyebrow">SALES ADVISOR</div><h1>今日销售作战台</h1><div class="sub">聚焦今天最需要推进的客户与下一步行动。</div></div>
       <div class="datebox"><small>行动日期</small><strong id="today"></strong><span id="weekday"></span></div>
     </header>
     <section class="stats" id="stats"></section>
@@ -29,14 +29,15 @@
       <aside class="side">
         <section class="sidepanel"><h2>本周节奏</h2><div class="week" id="week"></div></section>
         <section class="sidepanel"><h2>今日完成度</h2><div class="progress"><i id="progress"></i></div><p class="sub" id="progressText"></p></section>
-        <section class="sidepanel"><h2>军师原则</h2><div class="rule"><i class="dot"></i><span>先处理承诺逾期和今天到期</span></div><div class="rule"><i class="dot"></i><span>每条建议都保留来源线索</span></div><div class="rule"><i class="dot"></i><span>话术仅供复制，由销售人工发送</span></div></section>
+        <section class="sidepanel"><h2>跟进原则</h2><div class="rule"><i class="dot"></i><span>先处理承诺逾期和今天到期</span></div><div class="rule"><i class="dot"></i><span>先确认客户现状，再推进关键动作</span></div><div class="rule"><i class="dot"></i><span>沟通前核对价格、时间与正式承诺</span></div></section>
       </aside>
     </div>
-    <div class="footer">生成时间：__GENERATED_AT__ · 数据仅保存在当前本地工作区</div>
+    <div class="footer">今日行动清单 · 请根据实际沟通结果及时更新</div>
   </main>
   <script>
     const DATA=__DASHBOARD_DATA_JSON__;
     const labels={all:'全部',overdue:'已逾期',must:'今天必跟',suggested:'建议跟进',risk:'风险关注',waiting:'暂缓'};
+    const intentLabels={high:'高意向',medium:'中意向',low:'低意向',unknown:'意向待确认'};
     let active='all',query='';
     const key=`sa-dashboard:${DATA.date}`;
     const done=new Set(JSON.parse(localStorage.getItem(key)||'[]'));
@@ -47,7 +48,8 @@
     function renderFilters(){document.querySelector('#filters').innerHTML=Object.entries(labels).map(([k,v])=>`<button class="filter ${active===k?'active':''}" data-filter="${k}">${v}</button>`).join('');document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{active=b.dataset.filter;render()})}
     function renderWeek(){const monday=new Date(day);const n=(day.getDay()+6)%7;monday.setDate(day.getDate()-n);document.querySelector('#week').innerHTML=Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return `<div class="day ${d.toDateString()===day.toDateString()?'today':''}">${['一','二','三','四','五','六','日'][i]}<i>${d.getDate()}</i></div>`}).join('')}
     function visible(){return DATA.customers.filter(x=>(active==='all'||x.bucket===active)&&[x.name,x.stage,x.latest_update,x.next_action].join(' ').toLowerCase().includes(query))}
-    function renderCards(){const rows=visible();const el=document.querySelector('#cards');if(!rows.length){el.innerHTML='<div class="empty">当前筛选下没有客户任务。</div>';return}el.innerHTML=rows.map(x=>`<article class="card ${done.has(x.customer_id)?'done':''}"><div class="cardhead"><div class="identity"><div class="avatar">${esc((x.name||'?').slice(0,1))}</div><div><div class="name">${esc(x.name)}</div><div class="meta">${esc(x.stage||'阶段未确认')} · ${esc(x.intent_level||'意向未知')} · ${esc(x.customer_id)}</div></div></div><span class="badge ${x.bucket}">${labels[x.bucket]}</span></div><div class="reason"><b>为什么现在跟：</b>${esc(x.followup_reason||x.latest_update||'等待更多事实')}</div><div class="grid"><div class="cell"><div class="label">最新情况</div>${esc(x.latest_update||'暂无')}</div><div class="cell"><div class="label">下一步动作</div>${esc(x.next_action||'待确认')}</div><div class="cell"><div class="label">下次跟进</div>${esc(x.next_followup_at||'未排期')}</div><div class="cell"><div class="label">风险</div>${esc((x.risks||[]).join('；')||'暂无明确风险')}</div></div>${x.reply_suggestion?`<div class="reply">${esc(x.reply_suggestion)}</div>`:''}<div class="actions"><span class="meta">来源：${esc(x.source)}</span><div>${x.reply_suggestion?`<button class="btn" data-copy="${esc(x.customer_id)}">复制话术</button>`:''}<button class="btn donebtn" data-done="${esc(x.customer_id)}">${done.has(x.customer_id)?'撤销完成':'标记完成'}</button></div></div></article>`).join('');document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const x=DATA.customers.find(v=>v.customer_id===b.dataset.copy);navigator.clipboard.writeText(x.reply_suggestion);b.textContent='已复制';setTimeout(()=>b.textContent='复制话术',1200)});document.querySelectorAll('[data-done]').forEach(b=>b.onclick=()=>{done.has(b.dataset.done)?done.delete(b.dataset.done):done.add(b.dataset.done);localStorage.setItem(key,JSON.stringify([...done]));render()})}
+    function formatDate(v){if(!v)return'未排期';const d=new Date(v);return Number.isNaN(d.getTime())?v:d.toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})}
+    function renderCards(){const rows=visible();const el=document.querySelector('#cards');if(!rows.length){el.innerHTML='<div class="empty">当前筛选下没有客户任务。</div>';return}el.innerHTML=rows.map(x=>`<article class="card ${done.has(x.customer_id)?'done':''}"><div class="cardhead"><div class="identity"><div class="avatar">${esc((x.name||'?').slice(0,1))}</div><div><div class="name">${esc(x.name)}</div><div class="meta">${esc(x.stage||'阶段待确认')} · ${esc(intentLabels[x.intent_level]||x.intent_level||'意向待确认')}</div></div></div><span class="badge ${x.bucket}">${labels[x.bucket]}</span></div><div class="reason"><b>为什么现在跟：</b>${esc(x.followup_reason||x.latest_update||'按既定节奏持续跟进')}</div><div class="grid"><div class="cell"><div class="label">最新情况</div>${esc(x.latest_update||'暂无新的业务进展')}</div><div class="cell"><div class="label">下一步动作</div>${esc(x.next_action||'确认下一次沟通安排')}</div><div class="cell"><div class="label">下次跟进</div>${esc(formatDate(x.next_followup_at))}</div><div class="cell"><div class="label">风险</div>${esc((x.risks||[]).join('；')||'暂无明确风险')}</div></div>${x.reply_suggestion?`<div class="reply">${esc(x.reply_suggestion)}</div>`:''}<div class="actions"><span></span><div>${x.reply_suggestion?`<button class="btn" data-copy="${esc(x.customer_id)}">复制话术</button>`:''}<button class="btn donebtn" data-done="${esc(x.customer_id)}">${done.has(x.customer_id)?'撤销完成':'标记完成'}</button></div></div></article>`).join('');document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const x=DATA.customers.find(v=>v.customer_id===b.dataset.copy);navigator.clipboard.writeText(x.reply_suggestion);b.textContent='已复制';setTimeout(()=>b.textContent='复制话术',1200)});document.querySelectorAll('[data-done]').forEach(b=>b.onclick=()=>{done.has(b.dataset.done)?done.delete(b.dataset.done):done.add(b.dataset.done);localStorage.setItem(key,JSON.stringify([...done]));render()})}
     function renderProgress(){const actionable=DATA.customers.filter(x=>['overdue','must','suggested','risk'].includes(x.bucket));const n=actionable.filter(x=>done.has(x.customer_id)).length;const pct=actionable.length?Math.round(n/actionable.length*100):100;document.querySelector('#progress').style.width=`${pct}%`;document.querySelector('#progressText').textContent=`${n} / ${actionable.length} 位客户已处理（${pct}%）`}
     function render(){renderFilters();renderCards();renderProgress()}
     document.querySelector('#search').oninput=e=>{query=e.target.value.trim().toLowerCase();renderCards()};renderStats();renderWeek();render();

@@ -14,13 +14,13 @@ description: 统一入口的本地销售 AI 军师。用户首次使用、上传
 以当前 Space Agents 工作区为 `<工作区>`。运行时固定安装到：
 
 ```text
-<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.4.1/
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.5.0/
 ```
 
 每次触发时，先检查以下文件是否存在：
 
 ```text
-<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.4.1/sa_sales_advisor/cli.py
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.5.0/sa_sales_advisor/cli.py
 ```
 
 如果不存在，自动执行以下两步。优先使用 `python3`；环境只有 `python` 时替换命令名。
@@ -28,13 +28,13 @@ description: 统一入口的本地销售 AI 军师。用户首次使用、上传
 第一步，下载固定版本的引导器并验证 SHA-256。把 `<工作区>` 替换为当前工作区绝对路径：
 
 ```bash
-python3 -c "import hashlib,pathlib,urllib.request; u='https://raw.githubusercontent.com/kingkemander/spaceagents-sales-advisor/v0.4.1/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.4.1.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='b17e531332119358a7514d2c312d0378aa5d68fd18fe8394ec856b41d1304cb8', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
+python3 -c "import hashlib,pathlib,urllib.request; u='https://raw.githubusercontent.com/kingkemander/spaceagents-sales-advisor/v0.5.0/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.5.0.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='0561fed8b66adb69dd2fa7969f3e0b24d1f6d22408f2d99e44931bb00f4086f8', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
 ```
 
 第二步，运行引导器。它会下载并校验运行时包，然后返回真实 CLI 路径：
 
 ```bash
-python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.4.1.py" --workspace "<工作区>"
+python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.5.0.py" --workspace "<工作区>"
 ```
 
 如果下载、校验或解压失败，停止操作并把原始错误告诉用户；不要绕过校验，不要退回任何本机绝对路径。已安装且校验完整时，引导器是幂等的，不重复下载。
@@ -42,7 +42,7 @@ python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.4.1.py" 
 后续使用：
 
 ```text
-<运行时根目录> = <工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.4.1
+<运行时根目录> = <工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.5.0
 <CLI> = <运行时根目录>/sa_sales_advisor/cli.py
 <销售数据> = <工作区>/SA销售工作区
 ```
@@ -78,7 +78,10 @@ python3 "<CLI>" init --root "<销售数据>"
 - 价格、优惠、合同、库存、房源和交付承诺只能引用已确认资料。
 - 客户事实、销售判断和 AI 建议分开保存。
 - 不修改或删除用户原始材料。
-- 只扫描用户明确指定的本地文件或文件夹；工作区外来源只读，全部识别产物写入当前项目。批量图片使用本地 OCR 一次处理，不调用单张附件识别，最后统一确认。
+- 只扫描用户明确指定的本地文件或文件夹；工作区外来源只读，全部识别产物写入当前项目。
+- 所有图片（包括超长聊天截图）先整图调用 `qwen3.7-plus`，失败后整图调用 `glm-5.2`，两者均失败才使用跨平台 RapidOCR；不调用 `analyze-image` 附件扩展。
+- 图片识别、聊天式补充、客户匹配和画像草稿完成后，只向用户展示一次最终确认；确认前不写正式档案。
+- 客户卡片、当前状态、跟进计划、每日作战台和回复草稿只输出可直接使用的业务结论；识别模型、OCR、入库过程、文件路径和技术日志只留在内部溯源层，绝不出现在销售界面。
 
 ## 完成标准
 

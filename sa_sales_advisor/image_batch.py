@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare local screenshots for lossless, unattended batch recognition.
-
-This utility deliberately does not call a remote OCR service. It creates clear,
-overlapping tiles that an agent can inspect one by one without asking the user
-to upload each image. Recognition results remain pending until the user confirms
-the customer and extracted facts.
-"""
+"""Batch-analyze local customer images with vision-first, OCR-last routing."""
 
 from __future__ import annotations
 
@@ -22,10 +16,21 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+from vision_client import (
+    DEFAULT_FALLBACK_MODEL,
+    DEFAULT_KEY_ENV,
+    DEFAULT_MODEL,
+    VisionClientError,
+    analyze_image_with_fallback,
+    default_question,
+)
+
 
 SUPPORTED_SUFFIXES = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff"}
 MANIFEST_VERSION = 1
 PILLOW_VERSION = "11.3.0"
+RAPIDOCR_VERSION = "3.9.2"
+ONNXRUNTIME_VERSION = "1.19.2"
 LOCAL_DEPS = Path(__file__).resolve().parent.parent / ".deps"
 
 
@@ -95,12 +100,51 @@ def setup(_args: argparse.Namespace) -> int:
         "--target",
         str(LOCAL_DEPS),
         f"Pillow=={PILLOW_VERSION}",
+        f"rapidocr=={RAPIDOCR_VERSION}",
+        f"onnxruntime=={ONNXRUNTIME_VERSION}",
     ]
     result = subprocess.run(command, check=False)
     if result.returncode:
         return result.returncode
-    print(json.dumps({"status": "ready", "dependency": "Pillow", "version": PILLOW_VERSION, "path": str(LOCAL_DEPS)}, ensure_ascii=False, indent=2))
+    print(
+        json.dumps(
+            {
+                "status": "ready",
+                "dependencies": {
+                    "Pillow": PILLOW_VERSION,
+                    "RapidOCR": RAPIDOCR_VERSION,
+                    "ONNXRuntime": ONNXRUNTIME_VERSION,
+                },
+                "path": str(LOCAL_DEPS),
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
     return 0
+
+
+def require_rapidocr():
+    if LOCAL_DEPS.is_dir() and str(LOCAL_DEPS) not in sys.path:
+        sys.path.insert(0, str(LOCAL_DEPS))
+    try:
+        from rapidocr import RapidOCR
+    except ImportError:
+        print(
+            json.dumps(
+                {
+                    "status": "missing_dependency",
+                    "dependency": "RapidOCR",
+                    "message": "跨平台批量 OCR 需要 RapidOCR 和 ONNX Runtime。运行 images setup 后重试。",
+                    "install_command": f'"{sys.executable}" "{Path(__file__).resolve()}" setup',
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            file=sys.stderr,
+        )
+        raise SystemExit(4)
+    return RapidOCR
 
 
 def discover_images(input_path: Path, recursive: bool) -> list[Path]:
@@ -314,11 +358,28 @@ def recognize_tesseract(image_path: Path, executable: str, language: str, psm: i
     return "\n".join(lines).strip(), average, result.stderr.strip()
 
 
+def recognize_rapidocr(image_path: Path, engine) -> tuple[str, float, str]:
+    try:
+        result = engine(str(image_path))
+    except Exception as exc:
+        return "", 0.0, f"RapidOCR {type(exc).__name__}: {exc}"
+    texts = list(result.txts or [])
+    scores = [float(score) for score in (result.scores or [])]
+    average = (sum(scores) / len(scores) * 100.0) if scores else 0.0
+    return "\n".join(text.strip() for text in texts if text and text.strip()), average, ""
+
+
 def ocr(args: argparse.Namespace) -> int:
     manifest_path = Path(args.manifest).expanduser().resolve()
     manifest = load_manifest(manifest_path)
-    executable = args.tesseract or shutil.which("tesseract")
-    if not executable:
+    rapid_engine = None
+    executable = None
+    if args.engine == "rapidocr":
+        RapidOCR = require_rapidocr()
+        rapid_engine = RapidOCR()
+    else:
+        executable = args.tesseract or shutil.which("tesseract")
+    if args.engine == "tesseract" and not executable:
         print(
             json.dumps(
                 {
@@ -332,11 +393,13 @@ def ocr(args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return 5
-    language_check = subprocess.run([executable, "--list-langs"], check=False, capture_output=True, text=True, encoding="utf-8", errors="replace")
-    available = set(language_check.stdout.split())
-    requested = set(args.language.split("+"))
-    missing = sorted(requested - available)
-    if missing:
+    missing: list[str] = []
+    if args.engine == "tesseract":
+        language_check = subprocess.run([executable, "--list-langs"], check=False, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        available = set(language_check.stdout.split())
+        requested = set(args.language.split("+"))
+        missing = sorted(requested - available)
+    if args.engine == "tesseract" and missing:
         print(
             json.dumps(
                 {
@@ -354,11 +417,18 @@ def ocr(args: argparse.Namespace) -> int:
         return 6
 
     counts = {"high": 0, "medium": 0, "low": 0, "unreadable": 0, "skipped": 0}
+    source_ids = getattr(args, "source_ids", None)
     for item in manifest["tiles"]:
+        if source_ids is not None and item["source_id"] not in source_ids:
+            counts["skipped"] += 1
+            continue
         if item["status"] != "pending" and not args.force:
             counts["skipped"] += 1
             continue
-        text, confidence, error = recognize_tesseract(Path(item["tile_file"]), executable, args.language, args.psm)
+        if args.engine == "rapidocr":
+            text, confidence, error = recognize_rapidocr(Path(item["tile_file"]), rapid_engine)
+        else:
+            text, confidence, error = recognize_tesseract(Path(item["tile_file"]), executable, args.language, args.psm)
         if not text:
             quality = "unreadable"
             status_value = "unreadable"
@@ -379,8 +449,8 @@ def ocr(args: argparse.Namespace) -> int:
                 "status": status_value,
                 "quality": quality,
                 "ocr_file": str(destination),
-                "ocr_engine": "tesseract",
-                "ocr_language": args.language,
+                "ocr_engine": args.engine,
+                "ocr_language": "zh+en" if args.engine == "rapidocr" else args.language,
                 "ocr_confidence": round(confidence, 2),
                 "notes": error,
                 "recognized_at": now_iso(),
@@ -388,8 +458,8 @@ def ocr(args: argparse.Namespace) -> int:
         )
         counts[quality] += 1
     manifest["ocr_summary"] = {
-        "engine": "tesseract",
-        "language": args.language,
+        "engine": args.engine,
+        "language": "zh+en" if args.engine == "rapidocr" else args.language,
         "processed_at": now_iso(),
         "counts": counts,
     }
@@ -407,16 +477,74 @@ def scan(args: argparse.Namespace) -> int:
     if result:
         return result
     manifest_path = Path(args.output).expanduser().resolve() / args.batch_id / "manifest.json"
-    return ocr(
-        argparse.Namespace(
-            manifest=str(manifest_path),
-            tesseract=args.tesseract,
-            language=args.language,
-            psm=args.psm,
-            force=False,
-            no_finalize=False,
+    failed_sources = run_vision_batch(manifest_path, args)
+    if failed_sources:
+        ocr_result = ocr(
+            argparse.Namespace(
+                manifest=str(manifest_path),
+                engine=args.engine,
+                tesseract=args.tesseract,
+                language=args.language,
+                psm=args.psm,
+                force=False,
+                no_finalize=True,
+                source_ids=set(failed_sources),
+            )
         )
-    )
+        if ocr_result:
+            return ocr_result
+    return finalize(argparse.Namespace(manifest=str(manifest_path), allow_pending=True))
+
+
+def run_vision_batch(manifest_path: Path, args: argparse.Namespace) -> list[str]:
+    """Analyze every original image; return source ids that require OCR fallback."""
+    manifest = load_manifest(manifest_path)
+    vision_dir = manifest_path.parent / "vision"
+    vision_dir.mkdir(parents=True, exist_ok=True)
+    failed: list[str] = []
+    for source in manifest["sources"]:
+        source_id = source["source_id"]
+        try:
+            result_text, selected_model, prior_errors = analyze_image_with_fallback(
+                source["source_file"],
+                default_question(manifest.get("customer_hint", "")),
+                models=(args.vision_model, args.vision_fallback_model),
+                base=args.vision_base_url,
+                key_env=args.vision_key_env,
+                timeout=args.vision_timeout,
+            )
+            destination = vision_dir / f"{source_id}.md"
+            destination.write_text(result_text.rstrip() + "\n", encoding="utf-8")
+            source.update(
+                {
+                    "recognition_route": "ai_vision",
+                    "vision_status": "completed",
+                    "vision_model": selected_model,
+                    "vision_file": str(destination),
+                    "vision_prior_errors": prior_errors,
+                    "vision_analyzed_at": now_iso(),
+                }
+            )
+        except VisionClientError as exc:
+            failed.append(source_id)
+            source.update(
+                {
+                    "recognition_route": "rapidocr_fallback",
+                    "vision_status": "failed",
+                    "vision_models_attempted": [args.vision_model, args.vision_fallback_model],
+                    "vision_error": str(exc),
+                    "vision_analyzed_at": now_iso(),
+                }
+            )
+    manifest["vision_summary"] = {
+        "primary_model": args.vision_model,
+        "fallback_model": args.vision_fallback_model,
+        "processed_at": now_iso(),
+        "completed": len(manifest["sources"]) - len(failed),
+        "ocr_fallback": len(failed),
+    }
+    atomic_json(manifest_path, manifest)
+    return failed
 
 
 def normalized_line(line: str) -> str:
@@ -446,7 +574,14 @@ def merge_overlap(existing: list[str], incoming: list[str], maximum: int = 30) -
 def finalize(args: argparse.Namespace) -> int:
     manifest_path = Path(args.manifest).expanduser().resolve()
     manifest = load_manifest(manifest_path)
-    pending = [tile["tile_id"] for tile in manifest["tiles"] if tile["status"] == "pending"]
+    vision_completed = {
+        source["source_id"] for source in manifest["sources"] if source.get("vision_status") == "completed"
+    }
+    pending = [
+        tile["tile_id"]
+        for tile in manifest["tiles"]
+        if tile["status"] == "pending" and tile["source_id"] not in vision_completed
+    ]
     if pending and not args.allow_pending:
         print(json.dumps({"status": "pending", "pending_tiles": pending}, ensure_ascii=False, indent=2))
         return 3
@@ -457,17 +592,23 @@ def finalize(args: argparse.Namespace) -> int:
         f"customer_hint: {json.dumps(manifest.get('customer_hint', ''), ensure_ascii=False)}",
         f"created_at: {json.dumps(manifest['created_at'], ensure_ascii=False)}",
         "confirmation_status: pending",
-        "material_type: batch_chat_screenshots",
+        "material_type: batch_customer_images",
         "---",
         "",
-        "# 批量截图识别草稿",
+        "# 客户图片批量识别草稿",
         "",
-        "> 本文由本地原图切片后逐块识别生成。内容尚未写入正式客户档案，需用户统一确认。",
+        "> 每张原图优先由 AI 视觉模型理解；仅在千问与 GLM 均失败时使用本地 RapidOCR。内容尚未写入正式客户档案，需用户统一确认。",
         "",
     ]
     unreadable: list[str] = []
     for source in manifest["sources"]:
         output_lines.extend([f"## {Path(source['source_file']).name}", "", f"- 来源 SHA-256：`{source['source_sha256']}`", ""])
+        output_lines.extend([f"- 识别路径：{source.get('recognition_route', 'unknown')}", ""])
+        vision_file = source.get("vision_file")
+        if source.get("vision_status") == "completed" and vision_file and Path(vision_file).is_file():
+            output_lines.extend(Path(vision_file).read_text(encoding="utf-8").strip().splitlines())
+            output_lines.append("")
+            continue
         merged: list[str] = []
         for tile in (item for item in manifest["tiles"] if item["source_id"] == source["source_id"]):
             if tile["status"] == "unreadable":
@@ -484,16 +625,16 @@ def finalize(args: argparse.Namespace) -> int:
         if pending:
             output_lines.append(f"- 尚未处理切片：{', '.join(pending)}")
         output_lines.append("")
-    combined = manifest_path.parent / "combined-ocr.md"
+    combined = manifest_path.parent / "combined-analysis.md"
     combined.write_text("\n".join(output_lines), encoding="utf-8")
-    manifest["combined_ocr_file"] = str(combined)
+    manifest["combined_analysis_file"] = str(combined)
     manifest["finalized_at"] = now_iso()
     atomic_json(manifest_path, manifest)
     print(
         json.dumps(
             {
                 "status": "finalized",
-                "combined_ocr_file": str(combined),
+                "combined_analysis_file": str(combined),
                 "pending_count": len(pending),
                 "unreadable_count": len(unreadable),
                 "confirmation_status": "pending",
@@ -558,13 +699,20 @@ def parser() -> argparse.ArgumentParser:
     scan_parser.add_argument("--target-width", type=int, default=1400)
     scan_parser.add_argument("--no-enhance", action="store_true")
     scan_parser.add_argument("--tesseract")
+    scan_parser.add_argument("--engine", choices=["rapidocr", "tesseract"], default="rapidocr")
     scan_parser.add_argument("--language", default="chi_sim+eng")
     scan_parser.add_argument("--psm", type=int, default=6)
+    scan_parser.add_argument("--vision-model", default=DEFAULT_MODEL)
+    scan_parser.add_argument("--vision-fallback-model", default=DEFAULT_FALLBACK_MODEL)
+    scan_parser.add_argument("--vision-base-url")
+    scan_parser.add_argument("--vision-key-env", default=DEFAULT_KEY_ENV)
+    scan_parser.add_argument("--vision-timeout", type=int, default=240)
     scan_parser.set_defaults(func=scan)
 
     ocr_parser = sub.add_parser("ocr")
     ocr_parser.add_argument("--manifest", required=True)
     ocr_parser.add_argument("--tesseract")
+    ocr_parser.add_argument("--engine", choices=["rapidocr", "tesseract"], default="rapidocr")
     ocr_parser.add_argument("--language", default="chi_sim+eng")
     ocr_parser.add_argument("--psm", type=int, default=6)
     ocr_parser.add_argument("--force", action="store_true")
