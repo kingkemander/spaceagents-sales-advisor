@@ -16,7 +16,7 @@ https://github.com/kingkemander/spaceagents-sales-advisor
 
 ### 方式二：上传 ZIP
 
-在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.4.0.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。
+在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.4.1.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。
 
 仓库采用“一个插件、一个 Skill 入口、多个内部流程”的结构：
 
@@ -49,7 +49,7 @@ Space Agents 当前只导入 `SKILL.md` 也可以正常使用：首次调用时�
 - 该入口根据用户意图自动读取五个内部 Playbook，不需要用户选择子技能。
 - Python 运行包、HTML 模板和规则文件由入口 Skill 在首次调用时自动下载并校验。
 - 支持材料入库、客户记忆、个人口吻、每日跟进看板和回复草稿五类流程。
-- 支持直接扫描当前项目内的本地图片文件夹；微信长截图会先无损切片和增强，再由 Agent 后台逐张识别，用户无需反复上传。
+- 支持直接扫描用户明确指定的本地图片文件夹；微信长截图会先无损切片和增强，再由本地 OCR 一次性处理整个批次，不经过聊天附件队列。
 
 ## 第一次测试
 
@@ -82,8 +82,9 @@ Space Agents 当前只导入 `SKILL.md` 也可以正常使用：首次调用时�
 
 - Space Agents 能安装带 `.claude-plugin/plugin.json` 的 Claude Code 插件。
 - 运行环境提供 Python 3，用于客户索引和 HTML 看板生成。
+- 批量图片 OCR 需要本机可调用 Tesseract，并安装 `chi_sim` 中文语言包；缺失时插件会明确提示，不会退回逐张附件识别。
 - 运行环境允许在当前项目目录创建文件。
 
 ## 版本
 
-当前版本：`v0.4.0`。新增本地文件夹批量截图识别、微信长截图切片、识别队列和统一确认流程；仍只安装一个 Skill，首次调用自动准备完整运行时，后续离线复用已安装文件。
+当前版本：`v0.4.1`。批量截图现在由一条本地 OCR 命令完成文件遍历、长图切片、全文识别和 Markdown 合并，不再逐张调用附件分析；仍只安装一个 Skill。

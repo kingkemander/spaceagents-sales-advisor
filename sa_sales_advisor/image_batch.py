@@ -10,9 +10,13 @@ the customer and extracted facts.
 from __future__ import annotations
 
 import argparse
+import csv
+import difflib
 import hashlib
+import io
 import json
 import re
+import shutil
 import subprocess
 import sys
 from datetime import datetime
@@ -263,6 +267,158 @@ def record(args: argparse.Namespace) -> int:
     return 0
 
 
+def join_ocr_tokens(tokens: list[str]) -> str:
+    output = ""
+    for token in tokens:
+        token = token.strip()
+        if not token:
+            continue
+        if output and output[-1:].isascii() and output[-1:].isalnum() and token[:1].isascii() and token[:1].isalnum():
+            output += " "
+        output += token
+    return output
+
+
+def recognize_tesseract(image_path: Path, executable: str, language: str, psm: int) -> tuple[str, float, str]:
+    command = [executable, str(image_path), "stdout", "-l", language, "--psm", str(psm), "tsv"]
+    result = subprocess.run(command, check=False, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if result.returncode:
+        return "", 0.0, result.stderr.strip() or f"tesseract exited with {result.returncode}"
+    reader = csv.DictReader(io.StringIO(result.stdout), delimiter="\t")
+    lines: list[str] = []
+    current_key: tuple[str, str, str, str] | None = None
+    current_tokens: list[str] = []
+    confidences: list[float] = []
+    for row in reader:
+        text = (row.get("text") or "").strip()
+        if not text:
+            continue
+        key = (row.get("page_num", ""), row.get("block_num", ""), row.get("par_num", ""), row.get("line_num", ""))
+        if current_key is not None and key != current_key:
+            joined = join_ocr_tokens(current_tokens)
+            if joined:
+                lines.append(joined)
+            current_tokens = []
+        current_key = key
+        current_tokens.append(text)
+        try:
+            confidence = float(row.get("conf", "-1"))
+        except ValueError:
+            confidence = -1
+        if confidence >= 0:
+            confidences.append(confidence)
+    joined = join_ocr_tokens(current_tokens)
+    if joined:
+        lines.append(joined)
+    average = sum(confidences) / len(confidences) if confidences else 0.0
+    return "\n".join(lines).strip(), average, result.stderr.strip()
+
+
+def ocr(args: argparse.Namespace) -> int:
+    manifest_path = Path(args.manifest).expanduser().resolve()
+    manifest = load_manifest(manifest_path)
+    executable = args.tesseract or shutil.which("tesseract")
+    if not executable:
+        print(
+            json.dumps(
+                {
+                    "status": "missing_ocr_engine",
+                    "engine": "tesseract",
+                    "message": "未找到本地 Tesseract OCR。macOS 可运行 brew install tesseract tesseract-lang；Windows 请安装 Tesseract 并加入 PATH。",
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            file=sys.stderr,
+        )
+        return 5
+    language_check = subprocess.run([executable, "--list-langs"], check=False, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    available = set(language_check.stdout.split())
+    requested = set(args.language.split("+"))
+    missing = sorted(requested - available)
+    if missing:
+        print(
+            json.dumps(
+                {
+                    "status": "missing_ocr_language",
+                    "engine": "tesseract",
+                    "missing": missing,
+                    "available": sorted(available),
+                    "message": "缺少中文语言包。macOS 可运行 brew install tesseract-lang。",
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            file=sys.stderr,
+        )
+        return 6
+
+    counts = {"high": 0, "medium": 0, "low": 0, "unreadable": 0, "skipped": 0}
+    for item in manifest["tiles"]:
+        if item["status"] != "pending" and not args.force:
+            counts["skipped"] += 1
+            continue
+        text, confidence, error = recognize_tesseract(Path(item["tile_file"]), executable, args.language, args.psm)
+        if not text:
+            quality = "unreadable"
+            status_value = "unreadable"
+            text = "[无法辨认]"
+        elif confidence >= 80:
+            quality = "high"
+            status_value = "completed"
+        elif confidence >= 60:
+            quality = "medium"
+            status_value = "completed"
+        else:
+            quality = "low"
+            status_value = "completed"
+        destination = manifest_path.parent / "ocr" / f"{item['tile_id']}.md"
+        destination.write_text(text + "\n", encoding="utf-8")
+        item.update(
+            {
+                "status": status_value,
+                "quality": quality,
+                "ocr_file": str(destination),
+                "ocr_engine": "tesseract",
+                "ocr_language": args.language,
+                "ocr_confidence": round(confidence, 2),
+                "notes": error,
+                "recognized_at": now_iso(),
+            }
+        )
+        counts[quality] += 1
+    manifest["ocr_summary"] = {
+        "engine": "tesseract",
+        "language": args.language,
+        "processed_at": now_iso(),
+        "counts": counts,
+    }
+    atomic_json(manifest_path, manifest)
+    if args.no_finalize:
+        print(json.dumps({"status": "ocr_completed", "manifest": str(manifest_path), "counts": counts}, ensure_ascii=False, indent=2))
+        return 0
+    return finalize(argparse.Namespace(manifest=str(manifest_path), allow_pending=False))
+
+
+def scan(args: argparse.Namespace) -> int:
+    if not args.batch_id:
+        args.batch_id = datetime.now().strftime("images-%Y%m%d-%H%M%S")
+    result = prepare(args)
+    if result:
+        return result
+    manifest_path = Path(args.output).expanduser().resolve() / args.batch_id / "manifest.json"
+    return ocr(
+        argparse.Namespace(
+            manifest=str(manifest_path),
+            tesseract=args.tesseract,
+            language=args.language,
+            psm=args.psm,
+            force=False,
+            no_finalize=False,
+        )
+    )
+
+
 def normalized_line(line: str) -> str:
     return re.sub(r"\s+", "", line).casefold()
 
@@ -276,6 +432,14 @@ def merge_overlap(existing: list[str], incoming: list[str], maximum: int = 30) -
         right = [normalized_line(line) for line in incoming[:size]]
         if left == right and any(left):
             return existing + incoming[size:]
+        meaningful = sum(max(len(a), len(b)) for a, b in zip(left, right))
+        if meaningful >= 24:
+            weighted = sum(
+                difflib.SequenceMatcher(None, a, b).ratio() * max(len(a), len(b))
+                for a, b in zip(left, right)
+            ) / meaningful
+            if weighted >= 0.84:
+                return existing + incoming[size:]
     return existing + incoming
 
 
@@ -382,6 +546,30 @@ def parser() -> argparse.ArgumentParser:
     prepare_parser.add_argument("--target-width", type=int, default=1400)
     prepare_parser.add_argument("--no-enhance", action="store_true")
     prepare_parser.set_defaults(func=prepare)
+
+    scan_parser = sub.add_parser("scan")
+    scan_parser.add_argument("--input", required=True, help="Explicit image or folder path")
+    scan_parser.add_argument("--output", required=True, help="Batch output parent folder")
+    scan_parser.add_argument("--batch-id")
+    scan_parser.add_argument("--customer-hint", default="")
+    scan_parser.add_argument("--recursive", action="store_true")
+    scan_parser.add_argument("--tile-height", type=int, default=1600)
+    scan_parser.add_argument("--overlap", type=int, default=180)
+    scan_parser.add_argument("--target-width", type=int, default=1400)
+    scan_parser.add_argument("--no-enhance", action="store_true")
+    scan_parser.add_argument("--tesseract")
+    scan_parser.add_argument("--language", default="chi_sim+eng")
+    scan_parser.add_argument("--psm", type=int, default=6)
+    scan_parser.set_defaults(func=scan)
+
+    ocr_parser = sub.add_parser("ocr")
+    ocr_parser.add_argument("--manifest", required=True)
+    ocr_parser.add_argument("--tesseract")
+    ocr_parser.add_argument("--language", default="chi_sim+eng")
+    ocr_parser.add_argument("--psm", type=int, default=6)
+    ocr_parser.add_argument("--force", action="store_true")
+    ocr_parser.add_argument("--no-finalize", action="store_true")
+    ocr_parser.set_defaults(func=ocr)
 
     record_parser = sub.add_parser("record")
     record_parser.add_argument("--manifest", required=True)

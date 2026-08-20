@@ -16,12 +16,12 @@ from datetime import datetime
 from pathlib import Path
 
 
-VERSION = "0.4.0"
+VERSION = "0.4.1"
 RUNTIME_URL = (
     "https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/"
-    "v0.4.0/spaceagents-sales-advisor-runtime-v0.4.0.zip"
+    "v0.4.1/spaceagents-sales-advisor-runtime-v0.4.1.zip"
 )
-RUNTIME_SHA256 = "e7b6ee1732960af21da586058d20f4ea160c367af6c66cae231ec5e19d36e2a7"
+RUNTIME_SHA256 = "35addb8814af6f69cd2737bff4247811dbc2f08b3f37d02d365474734cc33ab2"
 
 
 def sha256_file(path: Path) -> str:
@@ -65,7 +65,7 @@ def valid_runtime(path: Path) -> bool:
 
 
 def download(url: str, destination: Path) -> None:
-    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.4.0"})
+    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.4.1"})
     with urllib.request.urlopen(request, timeout=60) as response, destination.open("wb") as output:
         shutil.copyfileobj(response, output)
 

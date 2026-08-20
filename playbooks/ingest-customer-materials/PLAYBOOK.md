@@ -32,42 +32,26 @@ python3 "<运行时根目录>/sa_sales_advisor/cli.py" init --root "<当前项�
 
 ## 本地文件夹与批量长截图
 
-用户明确给出当前项目内的图片文件夹，或说多张图片属于同一客户时，不要求逐张上传，也不要逐张询问客户归属。
+用户明确给出本地图片文件夹，或说多张图片属于同一客户时，不要求逐张上传，也不要逐张询问客户归属。工作区外的明确路径只读，所有识别产物仍写入当前项目的 `SA销售工作区`。
 
 1. 把用户给出的客户名称作为 `customer_hint`。这只是本批次归属提示，正式写入仍需最后统一确认。
-2. 准备批次。输出目录固定使用 `<当前项目>/SA销售工作区/inbox/image-batches`：
+2. 使用一条命令完成文件遍历、长图切片、本地 OCR 和 Markdown 合并。输出目录固定使用 `<当前项目>/SA销售工作区/inbox/image-batches`：
 
 ```bash
-python3 "<运行时根目录>/sa_sales_advisor/cli.py" images prepare \
+python3 "<运行时根目录>/sa_sales_advisor/cli.py" images scan \
   --input "<用户明确指定的图片或文件夹>" \
   --output "<当前项目>/SA销售工作区/inbox/image-batches" \
   --customer-hint "<同一客户名称>"
 ```
 
-3. 如果返回 `missing_dependency`，自动运行一次以下命令，再重试 `prepare`；不要让用户手工安装：
+3. 如果返回 `missing_dependency`，自动运行一次以下命令，再重试 `scan`；不要让用户手工安装 Python 图片依赖：
 
 ```bash
 python3 "<运行时根目录>/sa_sales_advisor/cli.py" images setup
 ```
 
-4. 读取返回的 `manifest.json`。依次处理其中 `status=pending` 的 `tile_file`，把本地切片的绝对路径直接交给当前环境可用的图片理解或 OCR 工具；不要重新粘贴进聊天输入框。每个切片只做忠实转录：保留说话人、时间、正文、文件名、图片或语音占位；不补写看不清的文字，用 `[无法辨认]` 标记。后台逐张处理，不要求用户重复上传或逐张确认。
-5. 每张切片识别后，把纯转录保存为临时 UTF-8 文本，再登记：
-
-```bash
-python3 "<运行时根目录>/sa_sales_advisor/cli.py" images record \
-  --manifest "<manifest.json>" \
-  --tile-id "<tile_id>" \
-  --text-file "<临时转录文本>" \
-  --quality "<high|medium|low|unreadable>"
-```
-
-6. 全部处理完后合并：
-
-```bash
-python3 "<运行时根目录>/sa_sales_advisor/cli.py" images finalize --manifest "<manifest.json>"
-```
-
-7. 读取 `combined-ocr.md`，再执行正常的客户匹配和事实提取。只展示一张批次确认卡，包含客户归属、图片数量、切片数量、低质量切片、新增事实、冲突与待确认项。
+4. `scan` 必须使用本地 OCR 一次处理整个批次；不要再调用单张 `analyze-image`，不要把图片复制到附件队列，也不要要求用户逐张上传。如果返回 `missing_ocr_engine` 或 `missing_ocr_language`，停止并把安装提示告诉用户，不要偷偷退回单张识别流程。
+5. 读取返回的 `combined-ocr.md`，再执行正常的客户匹配和事实提取。只展示一张批次确认卡，包含客户归属、图片数量、切片数量、低质量切片、新增事实、冲突与待确认项。
 
 切片用于避免长图在聊天上传或模型输入时被整体缩小。不得修改原图。不得因为某张图模糊而放弃其余图片。若原始像素本身不足，如实标记低质量，并建议用户提供原始截图、较短截图或可复制文本；不要声称图片增强能够恢复不存在的细节。
 

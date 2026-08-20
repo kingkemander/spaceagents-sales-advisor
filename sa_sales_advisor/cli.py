@@ -23,7 +23,7 @@ def usage() -> str:
 Usage:
   cli.py init --root <SA销售工作区>
   cli.py customer <create|register-material|hash|validate> [options]
-  cli.py images <prepare|record|finalize|status> [options]
+  cli.py images <scan|prepare|ocr|record|finalize|status> [options]
   cli.py memory <update|validate> [options]
   cli.py dashboard --workspace <SA销售工作区> [--date YYYY-MM-DD]
 """

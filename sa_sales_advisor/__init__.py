@@ -1,3 +1,3 @@
 """Runtime package for the Space Agents Sales Advisor plugin."""
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
