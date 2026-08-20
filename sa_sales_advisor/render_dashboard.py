@@ -41,23 +41,6 @@ def classify(customer: dict, today: date) -> tuple[str, int]:
     return "waiting", 10
 
 
-def markdown_section(path: Path, heading: str) -> str:
-    if not path.is_file():
-        return ""
-    lines = path.read_text(encoding="utf-8").splitlines()
-    active = False
-    collected = []
-    for line in lines:
-        if line.strip() == f"## {heading}":
-            active = True
-            continue
-        if active and line.startswith("## "):
-            break
-        if active and line.strip():
-            collected.append(line.strip().lstrip("- ").strip())
-    return clean_public_text(" ".join(collected))
-
-
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--workspace", required=True)
@@ -88,21 +71,11 @@ def main() -> int:
         customers.append(customer_view)
     customers.sort(key=lambda x: (-x["priority"], x.get("next_followup_at") or "9999"))
     generated_at = datetime.now().astimezone().isoformat(timespec="seconds")
-    review_count = len(list((root / "growth/reviews").glob("*.md")))
-    weekly_focus = markdown_section(root / "growth/weekly-focus.md", "主要训练项")
-    if not weekly_focus or weekly_focus == "待首次复盘后生成。":
-        weekly_focus = "价值前置，而不是追问进度"
     data = {
         "schema_version": 1,
         "generated_at": generated_at,
         "date": today.isoformat(),
         "customers": customers,
-        "growth": {
-            "weekly_focus": weekly_focus,
-            "review_count": review_count,
-            "weekly_target": 3,
-            "progress": min(100, round(review_count / 3 * 100)),
-        },
     }
     dashboard_dir = root / "dashboard"
     dashboard_dir.mkdir(parents=True, exist_ok=True)

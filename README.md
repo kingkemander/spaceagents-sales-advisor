@@ -16,7 +16,7 @@ https://github.com/kingkemander/spaceagents-sales-advisor
 
 ### 方式二：上传 ZIP
 
-在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.6.0.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。
+在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.6.1.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。
 
 仓库采用“一个插件、一个 Skill 入口、多个内部流程”的结构：
 
@@ -49,9 +49,10 @@ Space Agents 当前只导入 `SKILL.md` 也可以正常使用：首次调用时�
 - Space Agents 菜单里只显示 `sa-sales-advisor` 一个 Skill。
 - 该入口根据用户意图自动读取六个内部 Playbook，不需要用户选择子技能。
 - Python 运行包、HTML 模板和规则文件由入口 Skill 在首次调用时自动下载并校验。
-- 支持材料入库、客户记忆、个人口吻、每日跟进看板、回复草稿和销售成长六类流程。
+- 支持材料入库、客户记忆、个人口吻、每日跟进看板、回复草稿和可选策略参考六类流程。
 - 支持直接扫描每个客户的本地材料文件夹；所有图片（包括超长微信截图）先整图调用千问视觉，失败时整图切换 GLM，两个视觉模型都失败才使用跨平台 RapidOCR，不经过聊天附件队列。
-- 回复依次参考企业事实、客户事实、销售方法、真实相似案例和个人口吻；成长中心提供方法卡、历史策略镜像与沟通复盘。
+- 回复依次参考企业事实、客户事实、全球销售与决策思想、真实相似案例和个人口吻；每次最多匹配两个真正适用的框架，不向客户堆书名或套金句。
+- “策略灵感”提供 SPIN Selling、Challenger、Trusted Advisor、Getting to Yes、JOLT、Naval 等方法的可选视角；不设课程、打卡、进度或评分。
 - 销售作战台采用克制的 Apple Liquid Glass 视觉语言，玻璃用于功能层，客户内容保持高可读性。
 
 ## 第一次测试
@@ -90,4 +91,4 @@ Space Agents 当前只导入 `SKILL.md` 也可以正常使用：首次调用时�
 
 ## 版本
 
-当前版本：`v0.6.0`。新增 Apple Liquid Glass 销售作战台、销售成长中心、方法案例匹配和五层个性化回复。
+当前版本：`v0.6.1`。将成长中心重构为可选“策略灵感”，加入全球销售与决策思想库，并移除历史计谋、训练进度、打卡和评分表达。

@@ -153,10 +153,10 @@
     .practice i{width:7px;height:7px;border-radius:50%;background:#76d8b1;box-shadow:0 0 0 5px rgba(118,216,177,.12)}
     .scorepanel{padding:24px;border-radius:var(--radius-xl);background:var(--surface);border:1px solid rgba(255,255,255,.86);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;justify-content:space-between}
     .scorepanel small{color:var(--muted)}
-    .ringscore{width:104px;height:104px;margin:12px auto;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--blue) 0 72%,#e8ecf2 72%);position:relative}
-    .ringscore::after{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--surface-solid)}
-    .ringscore b{position:relative;z-index:1;font-size:25px}
-    .scorepanel p{margin:0;text-align:center;color:var(--muted);font-size:12px}
+    .scorepanel h3{font-size:23px;letter-spacing:-.03em;margin:14px 0 7px}
+    .scorepanel p{margin:0;color:var(--muted);font-size:12px}
+    .sourcepill{display:inline-flex;align-items:center;width:max-content;padding:5px 9px;border-radius:999px;background:var(--blue-soft);color:var(--blue);font-size:10px;font-weight:720}
+    .booknote{padding-top:14px;margin-top:16px!important;border-top:1px solid var(--line);color:var(--ink-soft)!important}
     .sectionhead{display:flex;align-items:end;justify-content:space-between;gap:20px;margin:27px 3px 12px}
     .sectionhead h2{font-size:20px;letter-spacing:-.03em;margin:0}
     .sectionhead p{margin:3px 0 0;color:var(--muted);font-size:12px}
@@ -193,11 +193,11 @@
     <header class="topbar glass" id="glassBar">
       <div class="brand">
         <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 15.5c3.2 0 3.8-7 7-7 2.2 0 2.8 3.2 4.6 3.2 1 0 1.6-.7 2.4-1.7M5 9.5c3.2 0 3.8 7 7 7 2.2 0 2.8-3.2 4.6-3.2 1 0 1.6.7 2.4 1.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
-        <div><div class="brandname">SA Sales Advisor</div><div class="brandmeta">销售行动与成长中心</div></div>
+        <div><div class="brandname">SA Sales Advisor</div><div class="brandmeta">销售行动与策略参考</div></div>
       </div>
       <nav class="nav" aria-label="主导航">
         <button class="navbtn active" data-view="action">今日行动</button>
-        <button class="navbtn" data-view="growth">成长中心</button>
+        <button class="navbtn" data-view="growth">策略灵感</button>
       </nav>
       <div class="topactions">
         <button class="quietbtn" title="搜索" onclick="document.querySelector('#search').focus()"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke-width="1.8"/><path d="m16 16 4 4" stroke-width="1.8" stroke-linecap="round"/></svg></button>
@@ -206,7 +206,7 @@
     </header>
 
     <section class="hero">
-      <div><div class="eyebrow" id="heroEyebrow">TODAY'S PRIORITIES</div><h1 id="heroTitle">把今天最重要的客户，稳稳往前推。</h1><p id="heroSub">先处理承诺与关键节点，再把每一次沟通变成长期能力。</p></div>
+      <div><div class="eyebrow" id="heroEyebrow">TODAY'S PRIORITIES</div><h1 id="heroTitle">把今天最重要的客户，稳稳往前推。</h1><p id="heroSub">先处理承诺与关键节点；需要新思路时，再看看不同销售体系如何理解这个场景。</p></div>
       <div class="dateplate"><small>行动日期</small><strong id="today"></strong><span class="subtle" id="weekday"></span></div>
     </section>
 
@@ -221,7 +221,7 @@
         <aside class="side">
           <section class="panel"><div class="panelhead"><h2>本周节奏</h2><span class="subtle">行动日历</span></div><div class="week" id="week"></div></section>
           <section class="panel"><div class="panelhead"><h2>今日完成度</h2><span class="subtle" id="progressText"></span></div><div class="progressmeta"><b id="progressNumber">0%</b><span class="subtle">保持稳定节奏</span></div><div class="progress"><i id="progress"></i></div></section>
-          <section class="panel"><div class="panelhead"><h2>今日能力焦点</h2><button class="btn" data-switch-growth>查看方法</button></div><div class="focus"><small>VALUE FIRST</small><b>价值前置，而不是追问进度</b><p>每次联系至少带来一个与客户当前决策有关的新信息。</p></div></section>
+          <section class="panel"><div class="panelhead"><h2>换个思路</h2><button class="btn" data-switch-growth>浏览灵感</button></div><div class="focus"><small>VALUE FIRST</small><b>先提供价值，再询问进度</b><p>这是一种可选视角。结合客户当下状态判断，不必机械套用。</p></div></section>
         </aside>
       </div>
     </section>
@@ -229,18 +229,18 @@
     <section class="view" id="growthView">
       <div class="growthhero">
         <section class="growthlead">
-          <div class="eyebrow">WEEKLY PRACTICE</div>
-          <h2>从“会说”升级为“会判断、会推进、会复盘”。</h2>
-          <p>方法不替代真实关系。它帮助你在关键节点做出更稳定的判断，再用你自己的方式把话说出来。</p>
-          <div class="practice"><i></i>本周训练：<span id="weeklyPractice"></span></div>
+          <div class="eyebrow">SALES PERSPECTIVES</div>
+          <h2>当推进卡住时，换一个看问题的角度。</h2>
+          <p>这里汇集全球经典销售、谈判、信任与决策思想。它们提供可能的思路，不是课程、打卡任务或标准答案。</p>
+          <div class="practice"><i></i>可选参考 · 先看事实，再选方法</div>
         </section>
         <section class="scorepanel">
-          <div><small>本周成长节奏</small><div class="ringscore" id="growthRing"><b id="growthScore">0 / 3</b></div></div>
-          <p id="growthCaption">完成 3 次有效复盘后，更新下一项训练重点。</p>
+          <div><small>本次建议阅读</small><span class="sourcepill">复杂需求探索</span><h3>SPIN Selling</h3><p>客户需求还不够明确时，先理解现状、问题和影响，再讨论方案价值。</p></div>
+          <p class="booknote">预计阅读 2 分钟 · 仅提供判断框架</p>
         </section>
       </div>
 
-      <div class="sectionhead"><div><h2>顾问式销售方法卡</h2><p>先匹配场景，再选择动作，最后才组织语言。</p></div><span class="subtle">6 METHODS</span></div>
+      <div class="sectionhead"><div><h2>常见场景建议</h2><p>从经典销售思想中提炼的可选动作，按客户实际情况取用。</p></div><span class="subtle">6 PERSPECTIVES</span></div>
       <section class="methodgrid">
         <article class="method"><div class="methodtop"><span class="methodno">METHOD 01</span><span class="methodtag">客户沉默</span></div><h3>价值前置</h3><p>先带来与客户当前决策有关的新信息，再提出一个容易回答的下一步。</p><div class="methodfoot">观察信号：客户开始追问细节或同意具体动作</div></article>
         <article class="method"><div class="methodtop"><span class="methodno">METHOD 02</span><span class="methodtag">明确异议</span></div><h3>异议拆解</h3><p>判断障碍属于预算、比较、权限、时机还是信任，只解决最关键的一层。</p><div class="methodfoot">观察信号：客户给出更具体的限制条件</div></article>
@@ -250,15 +250,15 @@
         <article class="method"><div class="methodtop"><span class="methodno">METHOD 06</span><span class="methodtag">长期无互动</span></div><h3>沉默唤醒</h3><p>用真实阶段变化重新建立上下文，同时允许客户明确表达暂缓。</p><div class="methodfoot">观察信号：重新进入决策、继续观望或明确暂停</div></article>
       </section>
 
-      <div class="sectionhead"><div><h2>历史策略镜像</h2><p>用于换角度思考，不用于对客户“用计”。</p></div></div>
+      <div class="sectionhead"><div><h2>经典销售思想</h2><p>查看不同体系如何理解同一个复杂销售场景。</p></div></div>
       <section class="historygrid">
-        <article class="history"><b>以逸待劳</b><p>客户暂缓时减少追问，准备下一决策节点真正需要的内容。</p></article>
-        <article class="history"><b>借东风</b><p>利用真实政策、项目进度与客户内部节点创造自然时机。</p></article>
-        <article class="history"><b>围魏救赵</b><p>正面异议僵持时，回到上游业务目标寻找真正瓶颈。</p></article>
-        <article class="history"><b>抛砖引玉</b><p>先提供小而具体的价值样本，换取更明确的需求反馈。</p></article>
+        <article class="history"><b>SPIN Selling</b><p>用高质量问题，让客户从模糊不满走向明确需求。</p></article>
+        <article class="history"><b>Challenger Sale</b><p>提供新洞察、适配不同角色，并清晰引导复杂决策。</p></article>
+        <article class="history"><b>Trusted Advisor</b><p>用专业、可靠与低自我导向建立长期顾问信任。</p></article>
+        <article class="history"><b>Naval</b><p>积累独特知识与判断力，在长期关系中创造复利价值。</p></article>
       </section>
 
-      <div class="sectionhead"><div><h2>一次沟通，三步复盘</h2><p>只记录可观察行为，不给自己或客户贴标签。</p></div></div>
+      <div class="sectionhead"><div><h2>可选复盘提示</h2><p>刚结束关键沟通时，可以快速看一眼；不打卡，也不计分。</p></div></div>
       <section class="review">
         <article class="reviewstep"><span>01</span><h3>原本想推进什么</h3><p>写清本次唯一目标，以及客户是否具备完成它的条件。</p></article>
         <article class="reviewstep"><span>02</span><h3>客户真实反应是什么</h3><p>记录客户说了什么、做了什么，不把猜测当成事实。</p></article>
@@ -273,7 +273,6 @@
     const labels={all:'全部',overdue:'已逾期',must:'今天必跟',suggested:'建议跟进',risk:'风险关注',waiting:'暂缓'};
     const intentLabels={high:'高意向',medium:'中意向',low:'低意向',unknown:'意向待确认'};
     const tones={must:'#235ee7',suggested:'#18855d',overdue:'#c83d4b',risk:'#a5660a',waiting:'#8791a0'};
-    const GROWTH=DATA.growth||{weekly_focus:'价值前置，而不是追问进度',review_count:0,weekly_target:3,progress:0};
     let active='all',query='';
     const storageKey='sa-dashboard:'+DATA.date;
     const done=new Set(JSON.parse(localStorage.getItem(storageKey)||'[]'));
@@ -281,18 +280,14 @@
     const date=new Date(DATA.date+'T12:00:00');
     document.querySelector('#today').textContent=date.toLocaleDateString('zh-CN',{month:'long',day:'numeric'});
     document.querySelector('#weekday').textContent=date.toLocaleDateString('zh-CN',{year:'numeric',weekday:'long'});
-    document.querySelector('#weeklyPractice').textContent=GROWTH.weekly_focus;
-    document.querySelector('#growthScore').textContent=GROWTH.review_count+' / '+GROWTH.weekly_target;
-    document.querySelector('#growthRing').style.background='conic-gradient(var(--blue) 0 '+GROWTH.progress+'%,#e8ecf2 '+GROWTH.progress+'%)';
-    document.querySelector('#growthCaption').textContent=GROWTH.review_count?'本周已完成 '+GROWTH.review_count+' 次有效复盘。':'完成 3 次有效复盘后，更新下一项训练重点。';
 
     function setView(view){
       document.querySelectorAll('.navbtn').forEach(x=>x.classList.toggle('active',x.dataset.view===view));
       document.querySelector('#actionView').classList.toggle('active',view==='action');
       document.querySelector('#growthView').classList.toggle('active',view==='growth');
-      document.querySelector('#heroEyebrow').textContent=view==='action'?"TODAY'S PRIORITIES":"SALES GROWTH";
-      document.querySelector('#heroTitle').textContent=view==='action'?'把今天最重要的客户，稳稳往前推。':'把每一次真实沟通，沉淀成你的长期能力。';
-      document.querySelector('#heroSub').textContent=view==='action'?'先处理承诺与关键节点，再把每一次沟通变成长期能力。':'方法帮助你判断，案例帮助你看见可能，最后仍然用自己的方式表达。';
+      document.querySelector('#heroEyebrow').textContent=view==='action'?"TODAY'S PRIORITIES":"SALES PERSPECTIVES";
+      document.querySelector('#heroTitle').textContent=view==='action'?'把今天最重要的客户，稳稳往前推。':'卡住的时候，换一个思路看看。';
+      document.querySelector('#heroSub').textContent=view==='action'?'先处理承诺与关键节点；需要新思路时，再看看不同销售体系如何理解这个场景。':'这里提供经典销售与决策思想的可选参考，不要求学习进度，也不替你做最终判断。';
     }
     document.querySelectorAll('[data-view]').forEach(x=>x.onclick=()=>setView(x.dataset.view));
     document.querySelectorAll('[data-switch-growth]').forEach(x=>x.onclick=()=>setView('growth'));

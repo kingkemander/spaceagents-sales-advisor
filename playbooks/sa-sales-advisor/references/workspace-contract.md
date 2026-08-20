@@ -24,7 +24,7 @@ SA销售工作区/
 │   ├── dashboard-data.json
 │   └── index.html
 ├── growth/
-│   ├── weekly-focus.md
+│   ├── strategy-notes.md
 │   └── reviews/
 └── logs/
 ```
