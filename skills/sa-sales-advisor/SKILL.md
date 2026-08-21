@@ -1,6 +1,6 @@
 ---
 name: sa-sales-advisor
-description: 统一入口的本地销售 AI 军师。用户首次使用、上传或补全客户材料、建立客户档案、学习个人口吻、查询今天跟谁、设置定时提醒、规划未来半年、生成销售作战台、按本人风格起草客户回复，或配置、查询、上传及每日同步 SpaceKB 企业知识库时使用。适用于房产、汽车、写字楼、产业园区及其他长周期顾问式销售；不连接 CRM 或聊天平台，不自动向客户发消息。首次调用时自动从固定 GitHub Release 下载并校验运行时。
+description: 统一入口的本地销售 AI 军师。用户说“生成销售军师智能体”“初始化销售军师”，或上传和补全客户材料、建立客户档案、学习个人口吻、查询今天跟谁、设置定时提醒、规划未来半年、生成销售作战台、按本人风格起草客户回复，以及配置、查询、上传或每日同步 SpaceKB 企业知识库时使用。适用于房产、汽车、写字楼、产业园区及其他长周期顾问式销售；不连接 CRM 或聊天平台，不自动向客户发消息。首次调用时自动从固定 GitHub Release 下载并校验运行时。
 ---
 
 # SA 销售军师
@@ -21,13 +21,13 @@ description: 统一入口的本地销售 AI 军师。用户首次使用、上传
 以当前 Space Agents 工作区为 `<工作区>`。运行时固定安装到：
 
 ```text
-<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.9.1/
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.10.0/
 ```
 
 每次触发时，先检查以下文件是否存在：
 
 ```text
-<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.9.1/sa_sales_advisor/cli.py
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.10.0/sa_sales_advisor/cli.py
 ```
 
 如果不存在，自动执行以下两步。优先使用 `python3`；环境只有 `python` 时替换命令名。
@@ -35,26 +35,30 @@ description: 统一入口的本地销售 AI 军师。用户首次使用、上传
 第一步，下载固定版本的引导器并验证 SHA-256。把 `<工作区>` 替换为当前工作区绝对路径：
 
 ```bash
-python3 -c "import hashlib,pathlib,urllib.request; u='https://raw.githubusercontent.com/kingkemander/spaceagents-sales-advisor/v0.9.1/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.9.1.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='62e11b99840df33b19f95e0e5115bd2c6e888541e566560a60366c48679b0448', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
+python3 -c "import hashlib,pathlib,urllib.request; u='https://raw.githubusercontent.com/kingkemander/spaceagents-sales-advisor/v0.10.0/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.10.0.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='757660c87a639c8ccdcde8611c540620ed09c5486d65a82b1217d4d58ea6a574', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
 ```
 
 第二步，运行引导器。它会下载并校验运行时包，然后返回真实 CLI 路径：
 
 ```bash
-python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.9.1.py" --workspace "<工作区>"
+python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.10.0.py" --workspace "<工作区>"
 ```
 
 如果下载、校验或解压失败，停止操作并把原始错误告诉用户；不要绕过校验，不要退回任何本机绝对路径。已安装且校验完整时，引导器是幂等的，不重复下载。
 
+引导器同时在**当前工作区**生成 `.opencode/agents/销售军师.md`。它不会写入 `~/.config` 等电脑全局配置，也不会绑定模型或供应商。若当前工作区已有非本插件管理的同名文件，必须保留原文件并向用户说明冲突，不得覆盖。
+
 后续使用：
 
 ```text
-<运行时根目录> = <工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.9.1
+<运行时根目录> = <工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.10.0
 <CLI> = <运行时根目录>/sa_sales_advisor/cli.py
 <销售数据> = <工作区>/SA销售工作区
 ```
 
 ## 第一次使用
+
+当用户说“生成销售军师智能体”或“初始化销售军师”时，完成上述引导后直接告诉用户：销售军师已生成到当前工作区；可重新打开智能体下拉或新建任务后选择“销售军师”。不要要求用户手工编辑配置文件。
 
 运行：
 

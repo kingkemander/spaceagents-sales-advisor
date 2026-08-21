@@ -16,12 +16,13 @@ from datetime import datetime
 from pathlib import Path
 
 
-VERSION = "0.9.1"
+VERSION = "0.10.0"
 RUNTIME_URL = (
     "https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/"
-    "v0.9.1/spaceagents-sales-advisor-runtime-v0.9.1.zip"
+    "v0.10.0/spaceagents-sales-advisor-runtime-v0.10.0.zip"
 )
-RUNTIME_SHA256 = "81e8822ec3738584d560121782a9540f3f09e0de231ecebff6a37c2767f368f6"
+RUNTIME_SHA256 = "5bcd76e0f114c9e04c0258d19947859852397e6baae3320e49427bf45f2fa9ff"
+MANAGED_AGENT_MARKER = "<!-- managed-by-spaceagents-sales-advisor -->"
 
 
 def sha256_file(path: Path) -> str:
@@ -70,13 +71,14 @@ def valid_runtime(path: Path) -> bool:
         path / "playbooks/draft-sales-reply/references/global-sales-wisdom.md",
         path / "playbooks/draft-sales-reply/references/customer-decision-psychology.md",
         path / "playbooks/coach-sales-growth/PLAYBOOK.md",
+        path / "agents/销售军师.md",
         path / "VERSION",
     ]
     return all(item.is_file() for item in required) and (path / "VERSION").read_text(encoding="utf-8").strip() == VERSION
 
 
 def download(url: str, destination: Path) -> None:
-    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.9.1"})
+    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.10.0"})
     with urllib.request.urlopen(request, timeout=60) as response, destination.open("wb") as output:
         shutil.copyfileobj(response, output)
 
@@ -85,6 +87,33 @@ def atomic_json(path: Path, data: dict) -> None:
     temp = path.with_suffix(path.suffix + ".tmp")
     temp.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     temp.replace(path)
+
+
+def write_managed_file(destination: Path, content: str) -> str:
+    if destination.exists():
+        existing = destination.read_text(encoding="utf-8")
+        if existing == content:
+            return "ready"
+        if MANAGED_AGENT_MARKER not in existing:
+            return "conflict-preserved"
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = destination.with_suffix(".md.tmp")
+    temporary.write_text(content, encoding="utf-8")
+    temporary.replace(destination)
+    return "installed"
+
+
+def install_workspace_agent(workspace: Path, runtime_root: Path) -> dict:
+    """Create the selectable agent only inside the current SpaceAgents workspace."""
+    agent_path = workspace / ".opencode/agents/销售军师.md"
+    status = write_managed_file(
+        agent_path,
+        (runtime_root / "agents/销售军师.md").read_text(encoding="utf-8"),
+    )
+    return {
+        "workspace_agent": status,
+        "workspace_agent_path": str(agent_path),
+    }
 
 
 def main() -> int:
@@ -101,7 +130,8 @@ def main() -> int:
     base.mkdir(parents=True, exist_ok=True)
 
     if valid_runtime(target):
-        print(json.dumps({"status": "ready", "version": VERSION, "runtime_root": str(target), "cli": str(cli)}, ensure_ascii=False, indent=2))
+        workspace_agent = install_workspace_agent(workspace, target)
+        print(json.dumps({"status": "ready", "version": VERSION, "runtime_root": str(target), "cli": str(cli), **workspace_agent}, ensure_ascii=False, indent=2))
         return 0
 
     staging = base / f".installing-v{VERSION}"
@@ -123,6 +153,7 @@ def main() -> int:
         if target.exists():
             shutil.rmtree(target)
         staging.replace(target)
+        workspace_agent = install_workspace_agent(workspace, target)
         atomic_json(
             base / "current.json",
             {
@@ -132,6 +163,7 @@ def main() -> int:
                 "installed_at": datetime.now().astimezone().isoformat(timespec="seconds"),
                 "source": args.runtime_url,
                 "sha256": args.runtime_sha256,
+                **workspace_agent,
             },
         )
     finally:
@@ -140,7 +172,7 @@ def main() -> int:
         if staging.exists():
             shutil.rmtree(staging)
 
-    print(json.dumps({"status": "installed", "version": VERSION, "runtime_root": str(target), "cli": str(cli)}, ensure_ascii=False, indent=2))
+    print(json.dumps({"status": "installed", "version": VERSION, "runtime_root": str(target), "cli": str(cli), **workspace_agent}, ensure_ascii=False, indent=2))
     return 0
 
 
