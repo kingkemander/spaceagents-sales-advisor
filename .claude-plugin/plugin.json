@@ -1,7 +1,7 @@
 {
   "name": "spaceagents-sales-advisor",
-  "version": "0.7.0",
-  "description": "面向房产、汽车、写字楼和产业园区销售的本地客户记忆、每日跟进与个性化回复技能包。",
+  "version": "0.8.0",
+  "description": "面向房产、汽车、写字楼和产业园区销售的本地客户记忆、文字行动提醒、长期排期与个性化回复技能包。",
   "author": {
     "name": "SpaceAgents"
   },

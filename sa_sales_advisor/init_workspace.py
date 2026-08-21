@@ -36,6 +36,7 @@ def main() -> int:
         "indexes",
         "customers",
         "dashboard",
+        "plans",
         "growth/reviews",
         "logs",
     ]:
@@ -82,6 +83,13 @@ def main() -> int:
         )
         + "\n",
         "logs/automation-runs.jsonl": "",
+        "indexes/reminder-index.json": json.dumps(
+            {"schema_version": 1, "updated_at": now_iso(), "reminders": []},
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        "plans/README.md": "# 销售排期\n\n保存用户确认的每日、每周和半年销售行动计划。自动任务由 SpaceAgents 管理，本目录只保存可追溯的业务排期。\n",
     }
     for rel, content in files.items():
         if write_if_missing(root / rel, content):
