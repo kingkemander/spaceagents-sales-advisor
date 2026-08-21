@@ -30,7 +30,12 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path.endswith("/chunks"):
-            self.send_json([{"id": "chunk-1", "content": "园区付款方案与交付安排", "page_num": 1}])
+            self.send_json(
+                [
+                    {"id": f"chunk-{index}", "content": "园区付款方案与交付安排" * 1000, "page_num": index}
+                    for index in range(40)
+                ]
+            )
         elif "/documents" in self.path:
             self.send_json([{"id": "doc-1", "filename": "项目资料.md"}])
         else:
@@ -96,6 +101,27 @@ class SpaceKBClientTest(unittest.TestCase):
     def test_public_http_is_rejected_by_default(self):
         with self.assertRaises(spacekb_client.SpaceKBError):
             spacekb_client.ensure_safe_url("http://123.56.18.172:30000", False)
+
+    def test_chunks_are_paginated_and_truncated(self):
+        self.configure()
+        args = argparse.Namespace(
+            workspace=str(self.workspace),
+            doc_id="doc-1",
+            offset=0,
+            limit=999,
+            max_chars=999999,
+        )
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            self.assertEqual(spacekb_client.show_chunks(args), 0)
+        result = json.loads(output.getvalue())
+        self.assertEqual(len(result["chunks"]), spacekb_client.MAX_CHUNK_ITEMS)
+        self.assertTrue(result["pagination"]["has_more"])
+        self.assertLessEqual(
+            max(len(item["content"]) for item in result["chunks"]),
+            spacekb_client.MAX_CHUNK_CHARS,
+        )
+        self.assertLess(len(output.getvalue()), 50000)
 
     def test_daily_private_sync_contains_completed_work(self):
         self.configure()

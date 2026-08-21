@@ -22,7 +22,13 @@ from urllib.request import ProxyHandler, Request, build_opener, urlopen
 DEFAULT_BASE_URL = "http://123.56.18.172:30000"
 DEFAULT_KNOWLEDGE_BASE_ID = "ecec0261-5cfc-4aae-af76-605c98b3fd59"
 DEFAULT_DOMAIN = "__private__"
-USER_AGENT = "SpaceAgents-Sales-Advisor/0.9.0"
+USER_AGENT = "SpaceAgents-Sales-Advisor/0.9.1"
+MAX_LIST_ITEMS = 100
+MAX_CHUNK_ITEMS = 20
+MAX_CHUNK_CHARS = 2000
+MAX_SEARCH_DOCUMENTS = 50
+MAX_SEARCH_RESULTS = 12
+MAX_SEARCH_CHARS = 2000
 
 
 class SpaceKBError(RuntimeError):
@@ -227,14 +233,80 @@ def status(args: argparse.Namespace) -> int:
 def list_documents(args: argparse.Namespace) -> int:
     client, config = client_for(Path(args.workspace).expanduser().resolve())
     value = client.list_documents(args.domain or config.get("default_domain"))
-    print(json.dumps(value, ensure_ascii=False, indent=2))
+    documents = value.get("documents", value.get("items", [])) if isinstance(value, dict) else value
+    if not isinstance(documents, list):
+        raise SpaceKBError("SpaceKB 文档列表格式不符合预期")
+    offset = max(0, args.offset)
+    limit = max(1, min(args.limit, MAX_LIST_ITEMS))
+    selected = []
+    for document in documents[offset : offset + limit]:
+        if not isinstance(document, dict):
+            continue
+        selected.append(
+            {
+                key: str(document[key])[:500]
+                for key in ("id", "filename", "name", "status", "domain", "created_at", "updated_at")
+                if document.get(key) is not None
+            }
+        )
+    print(
+        json.dumps(
+            {
+                "documents": selected,
+                "pagination": {
+                    "offset": offset,
+                    "limit": limit,
+                    "returned": len(selected),
+                    "total": len(documents),
+                    "has_more": offset + limit < len(documents),
+                },
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
     return 0
 
 
 def show_chunks(args: argparse.Namespace) -> int:
     client, _ = client_for(Path(args.workspace).expanduser().resolve())
     value = client.chunks(args.doc_id)
-    print(json.dumps(value, ensure_ascii=False, indent=2))
+    chunks = value.get("chunks", value.get("items", [])) if isinstance(value, dict) else value
+    if not isinstance(chunks, list):
+        raise SpaceKBError("SpaceKB 文档分块格式不符合预期")
+    offset = max(0, args.offset)
+    limit = max(1, min(args.limit, MAX_CHUNK_ITEMS))
+    max_chars = max(100, min(args.max_chars, MAX_CHUNK_CHARS))
+    selected = []
+    for chunk in chunks[offset : offset + limit]:
+        if not isinstance(chunk, dict):
+            continue
+        content = str(chunk.get("content", ""))
+        selected.append(
+            {
+                "id": chunk.get("id"),
+                "page_num": chunk.get("page_num"),
+                "content": content[:max_chars],
+                "content_truncated": len(content) > max_chars,
+            }
+        )
+    print(
+        json.dumps(
+            {
+                "document_id": args.doc_id,
+                "chunks": selected,
+                "pagination": {
+                    "offset": offset,
+                    "limit": limit,
+                    "returned": len(selected),
+                    "total": len(chunks),
+                    "has_more": offset + limit < len(chunks),
+                },
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
     return 0
 
 
@@ -255,7 +327,10 @@ def search(args: argparse.Namespace) -> int:
         raise SpaceKBError("SpaceKB 文档列表格式不符合预期")
     terms = query_terms(args.query)
     results = []
-    for document in documents[: args.max_documents]:
+    max_documents = max(1, min(args.max_documents, MAX_SEARCH_DOCUMENTS))
+    result_limit = max(1, min(args.limit, MAX_SEARCH_RESULTS))
+    max_chars = max(100, min(args.max_chars, MAX_SEARCH_CHARS))
+    for document in documents[:max_documents]:
         if not isinstance(document, dict) or not document.get("id"):
             continue
         chunks = client.chunks(str(document["id"]))
@@ -273,11 +348,12 @@ def search(args: argparse.Namespace) -> int:
                         "filename": document.get("filename"),
                         "chunk_id": chunk.get("id"),
                         "page_num": chunk.get("page_num"),
-                        "content": content[: args.max_chars],
+                        "content": content[:max_chars],
+                        "content_truncated": len(content) > max_chars,
                     }
                 )
     results.sort(key=lambda item: item["score"], reverse=True)
-    print(json.dumps({"query": args.query, "results": results[: args.limit]}, ensure_ascii=False, indent=2))
+    print(json.dumps({"query": args.query[:500], "results": results[:result_limit]}, ensure_ascii=False, indent=2))
     return 0
 
 
@@ -454,11 +530,16 @@ def build_parser() -> argparse.ArgumentParser:
     documents = sub.add_parser("list")
     documents.add_argument("--workspace", required=True)
     documents.add_argument("--domain")
+    documents.add_argument("--offset", type=int, default=0)
+    documents.add_argument("--limit", type=int, default=50)
     documents.set_defaults(func=list_documents)
 
     chunks = sub.add_parser("chunks")
     chunks.add_argument("--workspace", required=True)
     chunks.add_argument("--doc-id", required=True)
+    chunks.add_argument("--offset", type=int, default=0)
+    chunks.add_argument("--limit", type=int, default=8)
+    chunks.add_argument("--max-chars", type=int, default=1600)
     chunks.set_defaults(func=show_chunks)
 
     find = sub.add_parser("search")

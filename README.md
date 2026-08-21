@@ -16,7 +16,7 @@ https://github.com/kingkemander/spaceagents-sales-advisor
 
 ### 方式二：上传 ZIP
 
-在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.9.0.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。
+在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.9.1.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。上传包只包含运行必需文件，不携带宣传图或案例大图，避免安装材料进入模型上下文。
 
 仓库采用“一个插件、一个 Skill 入口、多个内部流程”的结构：
 
@@ -108,4 +108,4 @@ Space Agents 当前只导入 `SKILL.md` 也可以正常使用：首次调用时�
 
 ## 版本
 
-当前版本：`v0.9.0`。销售看板恢复每日静默更新；新增严重资料缺失补全任务、强制个人表达回复链、SpaceKB 本地密钥配置，以及每天 18:00 私人域销售日报同步。
+当前版本：`v0.9.1`。修复 Space Agents 导入完整包时因演示大图造成的上下文超限；知识库文档列表和内容分块全部强制分页、截断。销售看板仍每日静默更新，并保留资料补全任务、个人表达回复链、SpaceKB 本地密钥配置和每天 18:00 私人域销售日报同步。
