@@ -15,6 +15,8 @@ TOOLS = {
     "vision": "vision_client.py",
     "memory": "memory_store.py",
     "dashboard": "render_dashboard.py",
+    "activity": "activity_store.py",
+    "knowledge": "spacekb_client.py",
 }
 
 
@@ -28,6 +30,8 @@ Usage:
   cli.py vision <models|analyze> [options]
   cli.py memory <update|validate> [options]
   cli.py dashboard --workspace <SA销售工作区> [--date YYYY-MM-DD]
+  cli.py activity <add|list> [options]
+  cli.py knowledge <configure|status|list|chunks|search|upload|sync-daily> [options]
 """
 
 

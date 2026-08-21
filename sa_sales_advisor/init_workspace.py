@@ -37,6 +37,7 @@ def main() -> int:
         "customers",
         "dashboard",
         "plans",
+        "exports/spacekb",
         "growth/reviews",
         "logs",
     ]:
@@ -83,6 +84,8 @@ def main() -> int:
         )
         + "\n",
         "logs/automation-runs.jsonl": "",
+        "logs/task-events.jsonl": "",
+        "logs/spacekb-sync.jsonl": "",
         "indexes/reminder-index.json": json.dumps(
             {"schema_version": 1, "updated_at": now_iso(), "reminders": []},
             ensure_ascii=False,

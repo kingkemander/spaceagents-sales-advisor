@@ -1,6 +1,6 @@
 ---
 name: sa-sales-advisor
-description: 统一入口的本地销售 AI 军师。用户首次使用、上传客户材料、建立客户档案、更新客户画像、学习个人口吻、查询今天跟谁、要求“下午三点提醒我”“每天告诉我该联系谁”“到点问我做完没有”、规划未来半年销售安排、生成销售作战台或起草客户回复时使用。适用于房产、汽车、写字楼、产业园区及其他长周期顾问式销售；不连接 CRM 或聊天平台。首次调用时自动从固定 GitHub Release 下载并校验运行时。
+description: 统一入口的本地销售 AI 军师。用户首次使用、上传或补全客户材料、建立客户档案、学习个人口吻、查询今天跟谁、设置定时提醒、规划未来半年、生成销售作战台、按本人风格起草客户回复，或配置、查询、上传及每日同步 SpaceKB 企业知识库时使用。适用于房产、汽车、写字楼、产业园区及其他长周期顾问式销售；不连接 CRM 或聊天平台，不自动向客户发消息。首次调用时自动从固定 GitHub Release 下载并校验运行时。
 ---
 
 # SA 销售军师
@@ -14,13 +14,13 @@ description: 统一入口的本地销售 AI 军师。用户首次使用、上传
 以当前 Space Agents 工作区为 `<工作区>`。运行时固定安装到：
 
 ```text
-<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.8.0/
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.9.0/
 ```
 
 每次触发时，先检查以下文件是否存在：
 
 ```text
-<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.8.0/sa_sales_advisor/cli.py
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.9.0/sa_sales_advisor/cli.py
 ```
 
 如果不存在，自动执行以下两步。优先使用 `python3`；环境只有 `python` 时替换命令名。
@@ -28,13 +28,13 @@ description: 统一入口的本地销售 AI 军师。用户首次使用、上传
 第一步，下载固定版本的引导器并验证 SHA-256。把 `<工作区>` 替换为当前工作区绝对路径：
 
 ```bash
-python3 -c "import hashlib,pathlib,urllib.request; u='https://raw.githubusercontent.com/kingkemander/spaceagents-sales-advisor/v0.8.0/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.8.0.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='4090f34e17a00b81034e624383b9e61bee840bb0d08ac533f39825089eb02568', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
+python3 -c "import hashlib,pathlib,urllib.request; u='https://raw.githubusercontent.com/kingkemander/spaceagents-sales-advisor/v0.9.0/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.9.0.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='545950bb1268e61c577520f896ba31fd050060f8ced2d3cb995df9041490d41b', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
 ```
 
 第二步，运行引导器。它会下载并校验运行时包，然后返回真实 CLI 路径：
 
 ```bash
-python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.8.0.py" --workspace "<工作区>"
+python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.9.0.py" --workspace "<工作区>"
 ```
 
 如果下载、校验或解压失败，停止操作并把原始错误告诉用户；不要绕过校验，不要退回任何本机绝对路径。已安装且校验完整时，引导器是幂等的，不重复下载。
@@ -42,7 +42,7 @@ python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.8.0.py" 
 后续使用：
 
 ```text
-<运行时根目录> = <工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.8.0
+<运行时根目录> = <工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.9.0
 <CLI> = <运行时根目录>/sa_sales_advisor/cli.py
 <销售数据> = <工作区>/SA销售工作区
 ```
@@ -66,6 +66,7 @@ python3 "<CLI>" init --root "<销售数据>"
 - 学习或修改销售个人口吻、维护个人表达资料库、处理“这句话不像我”：`<运行时根目录>/playbooks/learn-sales-voice/PLAYBOOK.md`
 - 今天做什么、该给谁发什么以及用户明确要求的 HTML 作战台：`<运行时根目录>/playbooks/plan-daily-followups/PLAYBOOK.md`
 - 一次性提醒、到点完成确认、每日自动简报、每周复盘和未来半年排期：`<运行时根目录>/playbooks/schedule-sales-reminders/PLAYBOOK.md`
+- SpaceKB 配置、企业知识查询、文件上传和每天 18:00 私人域同步：`<运行时根目录>/playbooks/sync-spacekb/PLAYBOOK.md`
 - 分析客户为什么犹豫、客户可能怎么想，或根据企业知识、客户画像、全球销售思想、决策心理和个人口吻起草回复：`<运行时根目录>/playbooks/draft-sales-reply/PLAYBOOK.md`
 - 全球销售思想、相似场景、可选策略灵感与用户主动发起的复盘：`<运行时根目录>/playbooks/coach-sales-growth/PLAYBOOK.md`
 
@@ -73,7 +74,7 @@ python3 "<CLI>" init --root "<销售数据>"
 
 ## 固定边界
 
-- 只处理用户直接上传或明确指定的材料。
+- 只处理用户直接上传、明确指定的本地材料，或用户主动配置并有权访问的 SpaceKB 知识库内容。
 - 不连接 CRM、微信、企微或其他聊天平台。
 - 不自动向客户发送消息。
 - 用户明确要求定时提醒即视为授权创建自动任务；提醒只发送给销售本人，并直接包含客户、行动、原因和建议消息，不只发送看板链接。
@@ -86,7 +87,12 @@ python3 "<CLI>" init --root "<销售数据>"
 - 所有图片（包括超长聊天截图）先整图调用 `qwen3.7-plus`，失败后整图调用 `glm-5.2`，两者均失败才使用跨平台 RapidOCR；不调用 `analyze-image` 附件扩展。
 - 图片识别、聊天式补充、客户匹配和画像草稿完成后，只向用户展示一次最终确认；确认前不写正式档案。
 - 每次更新客户记忆时检查来源渠道、公司、职位、行业、需求、预算、周期和决策关系；缺失项保持为空，并在作战台给出一个自然的补问建议，不猜测补齐。
+- 客户资料严重缺失但用户选择先录入时，必须给销售本人创建补全资料任务；自动任务不可用时写入本地提醒索引并如实说明。
 - 个人口吻只学习销售本人确认过的工作表达；维护样本数量、稳定特征和禁止表达，使作战台个人表达卡与后续回复同步更新。
+- 所有客户回复先结合已确认企业/知识库事实、客户状态和最适用的销售思想完成内部判断，再强制按照 `sales-soul.md` 的本人表达习惯改写；销售方法不得直接堆进客户话术。
+- 每日跟进正常更新 HTML 看板但不自动打开；提醒同时直接发送文字行动清单。
+- SpaceKB API Key 不写进 Skill、GitHub、客户档案、日志或自动任务；只保存到当前用户本机 `.spaceagents/secrets/` 私有配置，首次验证成功后不再重复询问。
+- SpaceKB 配置成功后创建每天 18:00 私人域同步任务，只上传当天完成事项、重要节点和未来七天安排的摘要，不上传全量客户原件。
 - 客户卡片、当前状态、跟进计划、每日作战台和回复草稿只输出可直接使用的业务结论；识别模型、OCR、入库过程、文件路径和技术日志只留在内部溯源层，绝不出现在销售界面。
 
 ## 完成标准

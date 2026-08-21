@@ -14,7 +14,13 @@ description: 读取本地客户索引和客户状态，按承诺到期、跟进�
    资料缺口优先检查来源渠道、公司全称、客户职位、所属行业、核心需求、预算、项目周期和决策关系。补问应自然融入下一次沟通，不要像审问或一次索取全部资料。
    页面只显示面向销售的业务结论。证据用于内部校验，不在卡片上展示文件路径、客户 ID、模型、AI、OCR、识图、入库、置信度或其他处理痕迹。
 5. 必要时读取 `<运行时根目录>/playbooks/draft-sales-reply/PLAYBOOK.md` 补充草稿，并保持人工发送边界。
-6. 默认直接输出文字行动清单，不生成、打开或要求用户查看客户端页面。格式：
+6. 每日运行时正常刷新销售看板，但不自动打开、不弹出页面：
+
+```bash
+python3 "<运行时根目录>/sa_sales_advisor/cli.py" dashboard --workspace "<当前项目>/SA销售工作区"
+```
+
+7. 同时直接输出文字行动清单，格式：
 
 ```text
 【今日销售行动｜YYYY-MM-DD】
@@ -24,12 +30,8 @@ HH:MM｜客户名
 建议发送：……
 ```
 
-7. 最多列 5 位客户，结尾给出“今天最重要的一件事”。若今天没有需要联系的客户，如实说明，并列出最多 3 项内部准备。
-8. 只有用户明确说“生成看板”“打开看板”时才运行：
-
-```bash
-python3 "<运行时根目录>/sa_sales_advisor/cli.py" dashboard --workspace "<当前项目>/SA销售工作区"
-```
+8. 最多列 5 位客户，结尾给出“今天最重要的一件事”。若今天没有需要联系的客户，如实说明，并列出最多 3 项内部准备。
+9. 只有用户明确说“打开看板”时才返回并打开 `dashboard/index.html`；日常提醒不强迫用户查看页面。
 
 排序逻辑见 [references/followup-priority.md](references/followup-priority.md)。页面交互来自 [assets/dashboard-template.html](assets/dashboard-template.html)。
 

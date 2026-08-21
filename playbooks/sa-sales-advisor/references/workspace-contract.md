@@ -11,6 +11,7 @@ SA销售工作区/
 ├── indexes/
 │   ├── customer-index.json
 │   ├── material-index.json
+│   ├── reminder-index.json
 │   └── ingestion-ledger.jsonl
 ├── customers/{customer-folder}/
 │   ├── customer.json
@@ -23,10 +24,17 @@ SA销售工作区/
 ├── dashboard/
 │   ├── dashboard-data.json
 │   └── index.html
+├── plans/
+│   └── sales-plan-YYYY-MM-DD.md
+├── exports/spacekb/
+│   └── SA销售日报-YYYY-MM-DD.md
 ├── growth/
 │   ├── strategy-notes.md
 │   └── reviews/
 └── logs/
+    ├── task-events.jsonl
+    ├── automation-runs.jsonl
+    └── spacekb-sync.jsonl
 ```
 
-`customer.json` 是机器状态源；Markdown 是人和 AI 可读视图；原始文件是证据；HTML 只负责展示。
+`customer.json` 是机器状态源；Markdown 是人和智能体可读视图；原始文件是证据；HTML 只负责展示。SpaceKB API Key 不在该目录中，单独保存在项目级 `.spaceagents/secrets/`。

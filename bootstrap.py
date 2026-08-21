@@ -16,12 +16,12 @@ from datetime import datetime
 from pathlib import Path
 
 
-VERSION = "0.8.0"
+VERSION = "0.9.0"
 RUNTIME_URL = (
     "https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/"
-    "v0.8.0/spaceagents-sales-advisor-runtime-v0.8.0.zip"
+    "v0.9.0/spaceagents-sales-advisor-runtime-v0.9.0.zip"
 )
-RUNTIME_SHA256 = "f7efbc1ff98cfb9f6961a132d9e347a5a702b8a91e2a90b3149b23140f2ea482"
+RUNTIME_SHA256 = "65b84a4377552d06f9c7e48ca52c124a14b12393143c497c7574733e93ed4000"
 
 
 def sha256_file(path: Path) -> str:
@@ -54,6 +54,8 @@ def valid_runtime(path: Path) -> bool:
         path / "sa_sales_advisor/cli.py",
         path / "sa_sales_advisor/image_batch.py",
         path / "sa_sales_advisor/vision_client.py",
+        path / "sa_sales_advisor/activity_store.py",
+        path / "sa_sales_advisor/spacekb_client.py",
         path / "sa_sales_advisor/presentation.py",
         path / "sa_sales_advisor/templates/dashboard-template.html",
         path / "playbooks/ingest-customer-materials/PLAYBOOK.md",
@@ -62,6 +64,8 @@ def valid_runtime(path: Path) -> bool:
         path / "playbooks/plan-daily-followups/PLAYBOOK.md",
         path / "playbooks/schedule-sales-reminders/PLAYBOOK.md",
         path / "playbooks/schedule-sales-reminders/references/automation-prompts.md",
+        path / "playbooks/sync-spacekb/PLAYBOOK.md",
+        path / "playbooks/sync-spacekb/references/spacekb-api.md",
         path / "playbooks/draft-sales-reply/PLAYBOOK.md",
         path / "playbooks/draft-sales-reply/references/global-sales-wisdom.md",
         path / "playbooks/draft-sales-reply/references/customer-decision-psychology.md",
@@ -72,7 +76,7 @@ def valid_runtime(path: Path) -> bool:
 
 
 def download(url: str, destination: Path) -> None:
-    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.8.0"})
+    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.9.0"})
     with urllib.request.urlopen(request, timeout=60) as response, destination.open("wb") as output:
         shutil.copyfileobj(response, output)
 

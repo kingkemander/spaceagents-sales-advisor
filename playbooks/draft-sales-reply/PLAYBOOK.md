@@ -9,11 +9,11 @@ description: 根据企业已确认知识、指定客户的最新档案与证据�
 
 每次起草前读取：
 
-1. 企业事实：项目、产品、价格和政策的已确认资料。
+1. 企业事实：项目、产品、价格和政策的已确认资料。SpaceKB 已配置且问题涉及企业知识时，先读取 `<运行时根目录>/playbooks/sync-spacekb/PLAYBOOK.md` 查询相关内容。
 2. 客户事实：`customer.json`、客户卡和最近相关时间线。
 3. 专业推理：必须读取 [references/global-sales-wisdom.md](references/global-sales-wisdom.md) 和 [references/customer-decision-psychology.md](references/customer-decision-psychology.md)，再结合 `config/sales-method-library.md` 与 [references/scenario-method-cards.md](references/scenario-method-cards.md)。
 4. 相似案例：同类阶段、异议和结果的已脱敏复盘卡；没有真实案例时不得虚构。
-5. 个人口吻：`config/sales-soul.md`，作为最终表达层。
+5. 个人口吻：`config/sales-soul.md`，作为强制最终表达层，而不是可选修饰。
 
 缺少任何一个依据时明确说明，不编造补齐。
 
@@ -25,9 +25,13 @@ description: 根据企业已确认知识、指定客户的最新档案与证据�
 4. 判断此时应推进、提供价值、补问信息、降低风险、等待还是内部核实。
 5. 根据场景路由，从全球销售思想库中选择 1–2 个最相关框架，说明为什么适用、哪里不适用；方法用于内部思考，不直接写进客户消息。
 6. 给出最多三种策略：稳妥型、推进型、关系维护型；只保留真正不同的选项。
-7. 先写“高级销售会怎么想”，再按 `sales-soul.md` 改写成销售本人会说的话。禁止套用金句、书面腔和空泛话术。
+7. 先在内部完成“高级销售会怎么想”，再强制按 `sales-soul.md` 改写成销售本人会说的话。最终版本必须核对称呼、句长、消息分段、语气强弱、常用开场、推进方式、收尾习惯和禁止表达；不把内部分析过程发给客户。
 8. 给出首选草稿、必要时给短版，并注明发送后要观察的客户信号。
 9. 使用 [assets/reply-output-template.md](assets/reply-output-template.md) 输出人工审核点和本次成长要点。
+
+如果个人表达资料库仍为 `provisional` 或有效样本不足，不得声称“完全像本人”。先按已经确认的稳定特征生成，并提醒销售可用“这句话不像我”或“把这段计入我的口吻样本”继续校正。
+
+销售思想只用于提高需求判断、信任建立、异议处理和下一步设计的质量。不得为了“提高成单率”使用虚假稀缺、夸大承诺、压力操纵或与客户利益冲突的话术。
 
 ## 强制边界
 

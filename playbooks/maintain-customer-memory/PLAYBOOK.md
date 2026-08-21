@@ -22,6 +22,7 @@ python3 "<运行时根目录>/sa_sales_advisor/cli.py" memory update --workspace
 5. 脚本自动刷新 `customer-card.md`、`current-status.md` 和 `follow-up-plan.md`。
 6. 把本次已确认变化追加为新的时间线文件，不覆盖历史记录。
 7. 运行 `validate` 检查索引和目录一致性。
+8. 再次计算资料完整度。严重缺失且尚无补全任务时，读取 `<运行时根目录>/playbooks/schedule-sales-reminders/PLAYBOOK.md` 创建“补全客户资料”任务；已经存在同客户同类任务时更新，不重复创建。
 
 ## 客户卡原则
 
