@@ -16,15 +16,13 @@ https://github.com/kingkemander/spaceagents-sales-advisor
 
 ### 方式二：上传 ZIP
 
-在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.10.0.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。上传包只包含运行必需文件，不携带宣传图或案例大图，避免安装材料进入模型上下文。
+在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.10.1.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。上传包只包含运行必需文件，不携带宣传图或案例大图，避免安装材料进入模型上下文。
 
 仓库采用“一个插件、一个 Skill 入口、多个内部流程”的结构：
 
 ```text
 .claude-plugin/
   plugin.json
-agents/
-  销售军师.md
 skills/
   sa-sales-advisor/SKILL.md
 sa_sales_advisor/
@@ -34,6 +32,7 @@ sa_sales_advisor/
   memory_store.py
   render_dashboard.py
   templates/dashboard-template.html
+  templates/sales-advisor-agent.md
 playbooks/
   ingest-customer-materials/
   maintain-customer-memory/
@@ -48,12 +47,12 @@ bootstrap.py
 
 Space Agents 当前只导入 `SKILL.md` 也可以正常使用：首次调用时，入口 Skill 会从固定的 GitHub Release 下载经过 SHA-256 校验的运行时包，安装到当前工作区的 `.spaceagents/plugins/sa-sales-advisor/`。不依赖 `${CLAUDE_PLUGIN_ROOT}`，也不依赖开发者电脑路径。
 
-插件完整导入后，“销售军师”会作为可选择的智能体出现在当前工作区的智能体选择器中。它不写死模型或供应商，沿用用户可用的模型。如果 Space Agents 当前版本只导入了 `SKILL.md`，用户只需在目标工作区说“生成销售军师智能体”或“初始化销售军师”，入口 Skill 就会在该工作区生成 `.opencode/agents/销售军师.md`。每个需要使用的工作区执行一次即可；插件不写入电脑全局配置。如果目标位置已有用户自己创建的同名智能体，插件会保留原文件而不覆盖。
+安装插件后，用户在目标工作区说“生成销售军师智能体”或“初始化销售军师”，入口 Skill 会把内置模板注册为该工作区的 `.opencode/agents/销售军师.md`。这是兼容当前 SpaceAgents 主智能体下拉的可靠路径；扩展菜单中的 Agent 组件不等同于主下拉注册。每个需要使用的工作区执行一次即可，插件不写入电脑全局配置、不绑定模型。如果目标位置已有用户自己创建的同名智能体，插件会保留原文件而不覆盖。
 
 ## 包含能力
 
 - Space Agents 菜单里只显示 `sa-sales-advisor` 一个 Skill。
-- 智能体选择器显示“销售军师”主智能体，可直接切换，不再作为隐藏 subagent 使用。
+- 用户用一句自然语言在当前工作区生成“销售军师”主智能体，生成后可在智能体选择器直接切换。
 - 该入口根据用户意图自动读取八个内部 Playbook，不需要用户选择子技能。
 - Python 运行包、HTML 模板和规则文件由入口 Skill 在首次调用时自动下载并校验。
 - 支持材料入库、客户记忆、个人口吻、每日文字行动、自动提醒与长期排期、回复草稿和可选策略参考七类流程。
@@ -113,4 +112,4 @@ Space Agents 当前只导入 `SKILL.md` 也可以正常使用：首次调用时�
 
 ## 版本
 
-当前版本：`v0.10.0`。插件新增可在智能体选择器中直接切换的“销售军师”，不绑定固定模型；完整插件可直接携带，Skill-only 安装则通过一句自然语言在当前工作区生成，不修改电脑全局环境。继续保留上下文保护、客户资料补全、个人表达回复链、SpaceKB 本地密钥配置和每天 18:00 私人域销售日报同步。
+当前版本：`v0.10.1`。修复插件 Agent 只出现在扩展菜单、未进入主智能体下拉的问题；现在通过“生成销售军师智能体”把内置模板注册到当前工作区正确的 `.opencode/agents/` 目录，固定为 `primary`，不修改电脑全局环境。继续保留上下文保护、客户资料补全、个人表达回复链、SpaceKB 本地密钥配置和每天 18:00 私人域销售日报同步。

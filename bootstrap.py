@@ -16,12 +16,12 @@ from datetime import datetime
 from pathlib import Path
 
 
-VERSION = "0.10.0"
+VERSION = "0.10.1"
 RUNTIME_URL = (
     "https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/"
-    "v0.10.0/spaceagents-sales-advisor-runtime-v0.10.0.zip"
+    "v0.10.1/spaceagents-sales-advisor-runtime-v0.10.1.zip"
 )
-RUNTIME_SHA256 = "5bcd76e0f114c9e04c0258d19947859852397e6baae3320e49427bf45f2fa9ff"
+RUNTIME_SHA256 = "6616c7b1bd985b2ba66b878e5b3afb57bd67d27f8f904f3831ada25f31ac2881"
 MANAGED_AGENT_MARKER = "<!-- managed-by-spaceagents-sales-advisor -->"
 
 
@@ -71,14 +71,14 @@ def valid_runtime(path: Path) -> bool:
         path / "playbooks/draft-sales-reply/references/global-sales-wisdom.md",
         path / "playbooks/draft-sales-reply/references/customer-decision-psychology.md",
         path / "playbooks/coach-sales-growth/PLAYBOOK.md",
-        path / "agents/销售军师.md",
+        path / "sa_sales_advisor/templates/sales-advisor-agent.md",
         path / "VERSION",
     ]
     return all(item.is_file() for item in required) and (path / "VERSION").read_text(encoding="utf-8").strip() == VERSION
 
 
 def download(url: str, destination: Path) -> None:
-    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.10.0"})
+    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.10.1"})
     with urllib.request.urlopen(request, timeout=60) as response, destination.open("wb") as output:
         shutil.copyfileobj(response, output)
 
@@ -108,7 +108,7 @@ def install_workspace_agent(workspace: Path, runtime_root: Path) -> dict:
     agent_path = workspace / ".opencode/agents/销售军师.md"
     status = write_managed_file(
         agent_path,
-        (runtime_root / "agents/销售军师.md").read_text(encoding="utf-8"),
+        (runtime_root / "sa_sales_advisor/templates/sales-advisor-agent.md").read_text(encoding="utf-8"),
     )
     return {
         "workspace_agent": status,

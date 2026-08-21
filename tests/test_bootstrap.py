@@ -12,8 +12,8 @@ class WorkspaceAgentInstallTest(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
         self.runtime = self.root / "runtime"
-        (self.runtime / "agents").mkdir(parents=True)
-        self.source = self.runtime / "agents/销售军师.md"
+        (self.runtime / "sa_sales_advisor/templates").mkdir(parents=True)
+        self.source = self.runtime / "sa_sales_advisor/templates/sales-advisor-agent.md"
 
     def tearDown(self):
         self.temp.cleanup()
