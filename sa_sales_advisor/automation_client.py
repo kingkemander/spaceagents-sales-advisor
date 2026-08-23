@@ -6,7 +6,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import platform
 import re
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -96,7 +98,7 @@ def one_time_prompt(original: str, task_id: str) -> str:
 """
 
 
-def create(args: argparse.Namespace) -> None:
+def create_spaceagents(args: argparse.Namespace) -> None:
     workspace_id = resolve_workspace_id(args.workspace)
     prompt = Path(args.prompt_file).expanduser().read_text(encoding="utf-8").strip()
     if not prompt:
@@ -165,6 +167,55 @@ def create(args: argparse.Namespace) -> None:
     }, ensure_ascii=False, indent=2))
 
 
+def create_system_reminder(args: argparse.Namespace, fallback_cause: BaseException | None = None) -> None:
+    cli = Path(__file__).resolve().parent / "cli.py"
+    command = [
+        sys.executable,
+        str(cli),
+        "system-reminder",
+        "--workspace",
+        args.workspace,
+        "--title",
+        args.name,
+        "--message-file",
+        args.prompt_file,
+        "--time",
+        args.time,
+    ]
+    if args.date:
+        command.extend(["--date", args.date])
+    if args.voice:
+        command.extend(["--voice", "--repeat", str(args.repeat)])
+    result = subprocess.run(command, check=False, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise SystemExit(
+            "SpaceAgents automatic task and system reminder fallback both failed: "
+            + result.stderr.strip()
+        ) from fallback_cause
+    output = json.loads(result.stdout)
+    if fallback_cause is not None:
+        output["fallback_reason"] = "SpaceAgents automatic task service was unavailable"
+    print(json.dumps(output, ensure_ascii=False, indent=2))
+
+
+def create(args: argparse.Namespace) -> None:
+    if args.voice:
+        if args.schedule != "once":
+            raise SystemExit("voice alarm currently supports one-time reminders only")
+        if platform.system() not in {"Darwin", "Windows"}:
+            raise SystemExit("voice alarm currently supports macOS and Windows only")
+        create_system_reminder(args)
+        return
+
+    try:
+        create_spaceagents(args)
+        return
+    except SystemExit as original_error:
+        if not args.system_fallback or args.schedule != "once" or platform.system() not in {"Darwin", "Windows"}:
+            raise
+        create_system_reminder(args, original_error)
+
+
 def disable(args: argparse.Namespace) -> None:
     task = request_json("PUT", f"/automations/tasks/{args.task_id}", {"enabled": False}).get("task", {})
     print(json.dumps({"status": "disabled", "task_id": args.task_id, "name": task.get("name", "")}, ensure_ascii=False, indent=2))
@@ -188,8 +239,13 @@ def main() -> int:
     create_cmd.add_argument("--prompt-file", required=True)
     create_cmd.add_argument("--schedule", choices=["once", "daily", "weekly"], default="once")
     create_cmd.add_argument("--time", required=True)
+    create_cmd.add_argument("--date", help="Optional YYYY-MM-DD date for a one-time reminder")
     create_cmd.add_argument("--agent", default="销售军师")
     create_cmd.add_argument("--model", help="Optional providerID/modelID; defaults to the agent model")
+    create_cmd.add_argument("--voice", action="store_true", help="Use an audible macOS/Windows voice alarm")
+    create_cmd.add_argument("--repeat", type=int, default=3, choices=range(1, 6))
+    create_cmd.add_argument("--no-system-fallback", action="store_false", dest="system_fallback")
+    create_cmd.set_defaults(system_fallback=True)
     create_cmd.set_defaults(func=create)
 
     disable_cmd = sub.add_parser("disable")

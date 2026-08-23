@@ -19,6 +19,8 @@ TOOLS = {
     "knowledge": "spacekb_client.py",
     "pipeline": "pipeline_store.py",
     "automation": "automation_client.py",
+    "update": "update_client.py",
+    "system-reminder": "system_reminder.py",
 }
 
 
@@ -36,6 +38,8 @@ Usage:
   cli.py knowledge <configure|status|list|chunks|search|upload|sync-daily> [options]
   cli.py pipeline --workspace <SA销售工作区> [--date YYYY-MM-DD]
   cli.py automation <create|disable|list> [options]
+  cli.py update <check|status> [options]
+  cli.py system-reminder --workspace <项目根目录> --title <标题> --message-file <文件> --time HH:MM [--date YYYY-MM-DD] [--voice]
 """
 
 

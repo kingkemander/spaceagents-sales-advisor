@@ -16,7 +16,7 @@ https://github.com/kingkemander/spaceagents-sales-advisor
 
 ### 方式二：上传 ZIP
 
-在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.11.1.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。上传包只包含运行必需文件，不携带宣传图或案例大图，避免安装材料进入模型上下文。
+在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.12.0.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。上传包只包含运行必需文件，不携带宣传图或案例大图，避免安装材料进入模型上下文。
 
 仓库采用“一个插件、一个 Skill 入口、多个内部流程”的结构：
 
@@ -33,6 +33,7 @@ sa_sales_advisor/
   ingest_store.py
   memory_store.py
   pipeline_store.py
+  update_client.py
   render_dashboard.py
   templates/dashboard-template.html
   templates/sales-advisor-agent.md
@@ -49,7 +50,11 @@ playbooks/
 bootstrap.py
 ```
 
-Space Agents 当前只导入 `SKILL.md` 也可以正常使用：首次调用时，入口 Skill 会从固定的 GitHub Release 下载经过 SHA-256 校验的运行时包，安装到当前工作区的 `.spaceagents/plugins/sa-sales-advisor/`。不依赖 `${CLAUDE_PLUGIN_ROOT}`，也不依赖开发者电脑路径。
+Space Agents 当前只导入 `SKILL.md` 也可以正常使用：首次调用时，入口 Skill 会从固定的 GitHub Release 下载经过 SHA-256 校验的基础运行时包，安装到当前工作区的 `.spaceagents/plugins/sa-sales-advisor/`。不依赖 `${CLAUDE_PLUGIN_ROOT}`，也不依赖开发者电脑路径。
+
+从 v0.12.0 起支持自动更新。安装这一版后，销售军师每次启动都会执行一次轻量检查，但 24 小时内不会重复联网。发现 GitHub 最新稳定版时，先验证官方地址与 SHA-256，再把新版运行时安装到独立版本目录；全部验证通过后才更新 `current.json` 动态指针。旧运行时保留用于回滚，更新失败时继续使用当前版本。
+
+自动更新仅更新程序运行时、内部 Playbook 和插件管理的“销售军师”智能体，不覆盖 `SA销售工作区/` 中的客户档案、原始材料、个人口吻、企业配置、API Key、提醒任务或看板数据。由于旧版自身没有更新器，从 v0.11.1 或更早版本升级到 v0.12.0 仍需最后手动导入一次；此后正常功能更新无需反复粘贴 GitHub 链接。
 
 安装插件后，用户可先在目标工作区说“生成销售军师智能体”或“初始化销售军师”。入口 Skill 会尝试把内置模板注册为该工作区的 `.opencode/agents/销售军师.md`。由于 SpaceAgents 的默认智能体是否主动加载 Skill 由当前模型决定，插件同时提供 `generate-sales-advisor` 命令作为确定性兜底；从“命令”菜单运行它会先执行注册，再返回结果。每个需要使用的工作区执行一次即可，插件不写入电脑全局配置、不绑定模型。如果目标位置已有用户自己创建的同名智能体，插件会保留原文件而不覆盖。
 
@@ -64,6 +69,7 @@ Space Agents 当前只导入 `SKILL.md` 也可以正常使用：首次调用时�
 - 支持标准销售漏斗：初步接触、需求确认、方案演示、报价谈判、赢单/输单；记录金额、预计成交日期、成交概率、阶段历史和下一步动作。
 - 自动生成 `pipeline/leads.md`、`pipeline/pipeline.md` 和按日期归档的漏斗报告，包含阶段分布、转化率、加权预计收入、逾期与风险机会。
 - 用户明确说“下午三点提醒我”“每天告诉我该联系谁”“到点问我做完没有”时，入口会在当前对话直接调用 SpaceAgents 本地自动任务接口，不要求进入设置页；提醒触发时以文字列出客户、行动、原因和建议消息。
+- 用户明确要求“语音提醒/闹钟提醒”时，可在对话内生成一次性本地语音闹钟：macOS 使用 `launchd + say + afplay + 通知横幅`，Windows 使用任务计划程序 + 系统语音 + 弹窗；播报完成后自动清理，不依赖 SpaceAgents 一直打开。
 - 支持生成未来六个月的阶段计划并保存到本地 `plans/`；默认只为关键节点创建提醒，不批量生成无价值的每日任务。
 - 销售看板每天正常生成并更新，但不会自动打开；日常提醒仍直接发送文字行动清单。
 - 客户录入时主动展示资料完整度。严重缺失但用户选择先录入时，自动创建“补全客户资料”任务。
@@ -119,4 +125,4 @@ Space Agents 当前只导入 `SKILL.md` 也可以正常使用：首次调用时�
 
 ## 版本
 
-当前版本：`v0.11.1`。销售军师智能体使用已验证可显示的 `mode: all`，支持对话内直接创建自动提醒，并包含线索清单、标准销售漏斗、机会金额、预计成交日期、阶段历史、转化率、加权预计收入和风险机会报告。保留自然语言生成与 `generate-sales-advisor` 确定性命令，不修改电脑全局环境。
+当前版本：`v0.12.0`。在可显示的 `mode: all` 销售军师、对话内自动提醒和标准销售漏斗基础上，新增经官方地址与 SHA-256 双重验证的自动更新、动态运行时指针、失败回退和用户数据保护。保留自然语言生成与 `generate-sales-advisor` 确定性命令，不修改电脑全局环境。
