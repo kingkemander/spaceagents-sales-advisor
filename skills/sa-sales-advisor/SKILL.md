@@ -48,7 +48,7 @@ mode: all
 第一步，下载固定版本的引导器并验证 SHA-256。把 `<工作区>` 替换为当前工作区绝对路径：
 
 ```bash
-python3 -c "import hashlib,pathlib,urllib.request; u='https://raw.githubusercontent.com/kingkemander/spaceagents-sales-advisor/v0.12.0/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.12.0.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='2ba013a853420583b3a75c53c39e509ad1e0c096f1ca1a1bd4500875867d6390', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
+python3 -c "import hashlib,pathlib,urllib.request; u='https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/v0.12.0/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.12.0.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='2ba013a853420583b3a75c53c39e509ad1e0c096f1ca1a1bd4500875867d6390', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
 ```
 
 第二步，运行引导器。它会下载并校验运行时包，然后返回真实 CLI 路径：
