@@ -5,10 +5,11 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 from presentation import clean_public_value, contains_internal_language
+from pipeline_store import render as render_pipeline
 
 
 ALLOWED_FIELDS = {
@@ -16,7 +17,8 @@ ALLOWED_FIELDS = {
     "intent_level", "needs", "budget", "timeline", "decision_chain", "objections",
     "competitors", "last_contact_at", "next_followup_at", "latest_update",
     "followup_reason", "next_action", "reply_suggestion", "risks", "won_details",
-    "lost_details", "unconfirmed", "evidence"
+    "lost_details", "unconfirmed", "evidence", "pipeline_stage", "opportunity_amount",
+    "currency", "expected_close_date", "win_probability"
 }
 PUBLIC_FIELDS = ALLOWED_FIELDS - {"evidence"}
 
@@ -90,6 +92,10 @@ def render(customer_dir: Path, customer: dict) -> None:
 
 - 客户状态：{status_label}
 - 成交阶段：{customer.get('stage') or '未确认'}
+- 销售漏斗：{customer.get('pipeline_stage') or '初步接触'}
+- 机会金额：{customer.get('opportunity_amount') if customer.get('opportunity_amount') is not None else '未确认'} {customer.get('currency') or 'CNY'}
+- 预计成交：{customer.get('expected_close_date') or '未确认'}
+- 成交概率：{customer.get('win_probability') if customer.get('win_probability') is not None else '未确认'}%
 - 意向程度：{intent_label}
 - 最近沟通：{customer.get('last_contact_at') or '未确认'}
 - 下次跟进：{customer.get('next_followup_at') or '未确认'}
@@ -167,9 +173,39 @@ def update(args: argparse.Namespace) -> None:
             + ", ".join(dirty)
             + ". Rewrite them as direct business conclusions before updating."
         )
+    valid_stages = ["初步接触", "需求确认", "方案演示", "报价谈判", "赢单", "输单"]
+    if "pipeline_stage" in patch and patch["pipeline_stage"] not in valid_stages:
+        raise SystemExit("pipeline_stage must be one of: " + "、".join(valid_stages))
+    if "win_probability" in patch:
+        value = patch["win_probability"]
+        if not isinstance(value, int) or isinstance(value, bool) or not 0 <= value <= 100:
+            raise SystemExit("win_probability must be an integer from 0 to 100")
+    if "opportunity_amount" in patch:
+        value = patch["opportunity_amount"]
+        if value is not None and (not isinstance(value, (int, float)) or isinstance(value, bool) or value < 0):
+            raise SystemExit("opportunity_amount must be a non-negative number or null")
+    if "expected_close_date" in patch and patch["expected_close_date"] not in (None, ""):
+        try:
+            date.fromisoformat(str(patch["expected_close_date"]))
+        except ValueError as exc:
+            raise SystemExit("expected_close_date must use YYYY-MM-DD") from exc
+    previous_pipeline_stage = customer.get("pipeline_stage")
     for key, value in patch.items():
         customer[key] = value
-    customer["updated_at"] = now_iso()
+    timestamp = now_iso()
+    next_pipeline_stage = customer.get("pipeline_stage")
+    if next_pipeline_stage and next_pipeline_stage != previous_pipeline_stage:
+        history = customer.setdefault("stage_history", [])
+        history.append({"stage": next_pipeline_stage, "entered_at": timestamp})
+        if next_pipeline_stage == "赢单":
+            customer["status"] = "won"
+            customer["win_probability"] = 100
+        elif next_pipeline_stage == "输单":
+            customer["status"] = "lost"
+            customer["win_probability"] = 0
+        elif customer.get("status") in {"prospect", "dormant"}:
+            customer["status"] = "active"
+    customer["updated_at"] = timestamp
     save_json(customer_dir / "customer.json", customer)
     render(customer_dir, customer)
 
@@ -182,7 +218,8 @@ def update(args: argparse.Namespace) -> None:
             entry["updated_at"] = customer["updated_at"]
     index["updated_at"] = customer["updated_at"]
     save_json(root / "indexes/customer-index.json", index)
-    print(json.dumps({"status": "updated", "customer_id": args.customer_id, "fields": sorted(patch)}, ensure_ascii=False, indent=2))
+    pipeline_result = render_pipeline(root, date.today())
+    print(json.dumps({"status": "updated", "customer_id": args.customer_id, "fields": sorted(patch), "pipeline_report": pipeline_result["report"]}, ensure_ascii=False, indent=2))
 
 
 def validate(args: argparse.Namespace) -> None:

@@ -22,7 +22,7 @@ from urllib.request import ProxyHandler, Request, build_opener, urlopen
 DEFAULT_BASE_URL = "http://123.56.18.172:30000"
 DEFAULT_KNOWLEDGE_BASE_ID = "ecec0261-5cfc-4aae-af76-605c98b3fd59"
 DEFAULT_DOMAIN = "__private__"
-USER_AGENT = "SpaceAgents-Sales-Advisor/0.10.2"
+USER_AGENT = "SpaceAgents-Sales-Advisor/0.11.0"
 MAX_LIST_ITEMS = 100
 MAX_CHUNK_ITEMS = 20
 MAX_CHUNK_CHARS = 2000

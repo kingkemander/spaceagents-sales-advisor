@@ -9,6 +9,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from presentation import clean_public_text, clean_public_value
+from pipeline_store import OPEN_STAGES, STAGES, number, pipeline_stage, probability
 
 
 def missing(value) -> bool:
@@ -143,15 +144,33 @@ def main() -> int:
     root = Path(args.workspace).expanduser().resolve()
     today = date.fromisoformat(args.date) if args.date else date.today()
     customers = []
+    stage_counts = {stage: 0 for stage in STAGES}
+    stage_amounts = {stage: 0.0 for stage in STAGES}
+    open_amount = 0.0
+    weighted_revenue = 0.0
     for path in sorted((root / "customers").glob("*/customer.json")):
         customer = json.loads(path.read_text(encoding="utf-8"))
         bucket, score = classify(customer, today)
         gaps, completeness = customer_information_gaps(customer)
+        standard_stage = pipeline_stage(customer)
+        amount = number(customer.get("opportunity_amount"))
+        chance = probability(customer, standard_stage)
+        stage_counts[standard_stage] += 1
+        if amount is not None:
+            stage_amounts[standard_stage] += amount
+            if standard_stage in OPEN_STAGES:
+                open_amount += amount
+                weighted_revenue += amount * chance / 100
         customer_view = {
             "customer_id": customer.get("customer_id"),
             "name": customer.get("name"),
             "status": customer.get("status"),
             "stage": clean_public_text(customer.get("stage"), "阶段待确认"),
+            "pipeline_stage": standard_stage,
+            "opportunity_amount": amount,
+            "currency": customer.get("currency") or "CNY",
+            "expected_close_date": customer.get("expected_close_date"),
+            "win_probability": chance,
             "intent_level": customer.get("intent_level"),
             "last_contact_at": customer.get("last_contact_at"),
             "next_followup_at": customer.get("next_followup_at"),
@@ -174,6 +193,13 @@ def main() -> int:
         "date": today.isoformat(),
         "customers": customers,
         "sales_voice": sales_voice_profile(root),
+        "pipeline": {
+            "stages": [{"name": stage, "count": stage_counts[stage], "amount": round(stage_amounts[stage], 2)} for stage in STAGES],
+            "open_amount": round(open_amount, 2),
+            "weighted_revenue": round(weighted_revenue, 2),
+            "won_amount": round(stage_amounts["赢单"], 2),
+            "risk_count": sum(1 for item in customers if item.get("risks") or item.get("bucket") in {"overdue", "risk"}),
+        },
     }
     dashboard_dir = root / "dashboard"
     dashboard_dir.mkdir(parents=True, exist_ok=True)

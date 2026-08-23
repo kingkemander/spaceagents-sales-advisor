@@ -204,11 +204,20 @@
     .voiceprofiletop{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:17px}.voiceprofile h3{font-size:20px;margin:0}.voiceprofiletop p{color:var(--muted);font-size:12px;margin:5px 0 0}.samplecounts{display:flex;gap:8px}.samplecount{padding:8px 10px;border-radius:12px;background:#f1effa;text-align:center;min-width:66px}.samplecount b{display:block;font-size:18px;color:var(--violet)}.samplecount span{font-size:9px;color:var(--muted)}
     .voicegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.voicefield{padding:14px;border-radius:15px;background:rgba(247,247,251,.82);border:1px solid var(--line)}.voicefield small{color:var(--violet);font-weight:700}.voicefield p{font-size:11px;color:var(--ink-soft);margin:5px 0 0}
     .voicenext{margin-top:13px;padding:12px 14px;border-radius:14px;background:#f3f0ff;color:#51477b;font-size:12px}.voicenext b{display:block;margin-bottom:3px}
+    .pipelinehero{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:15px}
+    .metriccard{padding:21px;border-radius:var(--radius-lg);background:var(--surface);border:1px solid rgba(255,255,255,.88);box-shadow:var(--shadow-sm)}
+    .metriccard small{color:var(--muted);font-weight:650}.metriccard b{display:block;font-size:27px;letter-spacing:-.04em;margin:7px 0 1px}.metriccard span{font-size:11px;color:var(--muted)}
+    .funnelgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:15px}
+    .funnelstage{position:relative;overflow:hidden;padding:17px;border-radius:18px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);box-shadow:var(--shadow-sm)}
+    .funnelstage::after{content:"";position:absolute;right:-20px;bottom:-28px;width:78px;height:78px;border-radius:50%;background:var(--stage-tone,#235ee7);opacity:.07}.funnelstage small{color:var(--muted)}.funnelstage b{display:block;font-size:24px;margin-top:6px}.funnelstage span{font-size:11px;color:var(--ink-soft)}
+    .pipelinetablewrap{overflow:auto;border-radius:var(--radius-lg);background:var(--surface);border:1px solid rgba(255,255,255,.88);box-shadow:var(--shadow-sm)}
+    .pipelinetable{width:100%;border-collapse:collapse;min-width:880px}.pipelinetable th,.pipelinetable td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);white-space:nowrap}.pipelinetable th{font-size:10px;letter-spacing:.08em;color:var(--muted);background:rgba(245,248,252,.72)}.pipelinetable td{font-size:12px;color:var(--ink-soft)}.pipelinetable tr:last-child td{border-bottom:0}.pipelinetable .customername{font-weight:760;color:var(--ink)}
+    .stagepill{display:inline-flex;padding:5px 9px;border-radius:999px;background:var(--blue-soft);color:var(--blue);font-size:10px;font-weight:720}.stagepill.won{background:var(--green-soft);color:var(--green)}.stagepill.lost{background:var(--red-soft);color:var(--red)}
     .footer{text-align:center;color:var(--muted);font-size:11px;margin-top:28px}
-    @media(max-width:1080px){.layout{grid-template-columns:1fr}.side{position:static;grid-template-columns:repeat(2,1fr)}.methodgrid{grid-template-columns:repeat(2,1fr)}.historygrid{grid-template-columns:repeat(2,1fr)}.voicehero{grid-template-columns:1fr}}
+    @media(max-width:1080px){.layout{grid-template-columns:1fr}.side{position:static;grid-template-columns:repeat(2,1fr)}.methodgrid{grid-template-columns:repeat(2,1fr)}.historygrid{grid-template-columns:repeat(2,1fr)}.voicehero{grid-template-columns:1fr}.pipelinehero{grid-template-columns:repeat(2,1fr)}.funnelgrid{grid-template-columns:repeat(3,1fr)}}
     @media(max-width:760px){
       .app{width:min(100% - 22px,1500px);padding-top:11px}.topbar{top:7px;padding:9px 10px}.brandmeta,.profile span,.topactions .quietbtn{display:none}.brand{min-width:auto}.topactions{min-width:auto}.navbtn{padding:8px 10px}.hero{padding:37px 3px 23px;align-items:flex-start;flex-direction:column}.dateplate{width:100%}
-      .stats{grid-template-columns:repeat(2,1fr)}.toolrow{align-items:stretch;flex-direction:column}.searchwrap{min-width:0;border-left:0;border-top:1px solid var(--line)}.facts{grid-template-columns:1fr}.fact+.fact{border-left:0;border-top:1px solid var(--line);padding-left:0}.fact{padding:11px 0}.side{grid-template-columns:1fr}.growthhero{grid-template-columns:1fr}.methodgrid,.historygrid,.review,.voicegrid{grid-template-columns:1fr}.review{gap:1px}.growthlead{min-height:270px}
+      .stats{grid-template-columns:repeat(2,1fr)}.toolrow{align-items:stretch;flex-direction:column}.searchwrap{min-width:0;border-left:0;border-top:1px solid var(--line)}.facts{grid-template-columns:1fr}.fact+.fact{border-left:0;border-top:1px solid var(--line);padding-left:0}.fact{padding:11px 0}.side{grid-template-columns:1fr}.growthhero{grid-template-columns:1fr}.methodgrid,.historygrid,.review,.voicegrid,.pipelinehero{grid-template-columns:1fr}.funnelgrid{grid-template-columns:repeat(2,1fr)}.review{gap:1px}.growthlead{min-height:270px}
     }
     @media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
     @media(prefers-reduced-transparency:reduce){.glass,.topbar,.toolrow{backdrop-filter:none;-webkit-backdrop-filter:none;background:#fbfcfe}.card,.panel,.method{background:#fff}}
@@ -223,6 +232,7 @@
       </div>
       <nav class="nav" aria-label="主导航">
         <button class="navbtn active" data-view="action">今日行动</button>
+        <button class="navbtn" data-view="pipeline">销售漏斗</button>
         <button class="navbtn" data-view="growth">策略灵感</button>
         <button class="navbtn" data-view="voice">个人表达</button>
       </nav>
@@ -254,6 +264,19 @@
           <section class="panel"><div class="panelhead"><h2>个人表达资料库</h2><button class="btn" data-switch-voice>查看口吻</button></div><div class="voicebrief"><div class="voicebriefrow"><strong id="voiceBriefLevel">待建立</strong><span id="voiceBriefSamples">0 条样本</span></div><div class="voiceprogress"><i id="voiceBriefProgress"></i></div><p id="voiceBriefNext">补充本人表达样本后，回复会逐渐更像本人。</p></div></section>
         </aside>
       </div>
+    </section>
+
+    <section class="view" id="pipelineView">
+      <section class="pipelinehero">
+        <article class="metriccard"><small>在途机会金额</small><b id="pipelineOpen">¥0</b><span>不含已赢单与已输单</span></article>
+        <article class="metriccard"><small>加权预计收入</small><b id="pipelineWeighted">¥0</b><span>按各机会赢单概率计算</span></article>
+        <article class="metriccard"><small>已赢单金额</small><b id="pipelineWon">¥0</b><span>当前客户档案累计</span></article>
+        <article class="metriccard"><small>风险机会</small><b id="pipelineRisks">0</b><span>含逾期跟进与明确风险</span></article>
+      </section>
+      <div class="sectionhead"><div><h2>阶段分布</h2><p>从初步接触到赢单/输单，统一查看数量与金额。</p></div><span class="subtle">PIPELINE STAGES</span></div>
+      <section class="funnelgrid" id="pipelineStages"></section>
+      <div class="sectionhead"><div><h2>销售机会明细</h2><p>金额、预计成交时间、下一步动作与跟进节奏集中呈现。</p></div></div>
+      <section class="pipelinetablewrap"><table class="pipelinetable"><thead><tr><th>客户</th><th>当前阶段</th><th>机会金额</th><th>赢单概率</th><th>预计成交</th><th>下次跟进</th><th>下一步动作</th></tr></thead><tbody id="pipelineRows"></tbody></table></section>
     </section>
 
     <section class="view" id="voiceView">
@@ -334,11 +357,11 @@
     function setView(view){
       document.querySelectorAll('.navbtn').forEach(x=>x.classList.toggle('active',x.dataset.view===view));
       document.querySelector('#actionView').classList.toggle('active',view==='action');
+      document.querySelector('#pipelineView').classList.toggle('active',view==='pipeline');
       document.querySelector('#growthView').classList.toggle('active',view==='growth');
       document.querySelector('#voiceView').classList.toggle('active',view==='voice');
-      document.querySelector('#heroEyebrow').textContent=view==='action'?"TODAY'S PRIORITIES":view==='growth'?"SALES PERSPECTIVES":"PERSONAL SALES VOICE";
-      document.querySelector('#heroTitle').textContent=view==='action'?'把今天最重要的客户，稳稳往前推。':view==='growth'?'卡住的时候，换一个思路看看。':'把专业判断，说成自己真正会说的话。';
-      document.querySelector('#heroSub').textContent=view==='action'?'先处理承诺与关键节点；需要新思路时，再看看不同销售体系如何理解这个场景。':view==='growth'?'这里提供经典销售与决策思想的可选参考，不要求学习进度，也不替你做最终判断。':'个人表达资料库会随着本人样本持续更新；销售可以随时修改，最终以本人确认的习惯为准。';
+      const hero={action:["TODAY'S PRIORITIES",'把今天最重要的客户，稳稳往前推。','先处理承诺与关键节点；需要新思路时，再看看不同销售体系如何理解这个场景。'],pipeline:['SALES PIPELINE','看清每一笔机会，知道收入可能从哪里来。','统一查看销售阶段、机会金额、预计成交日期和风险，及时把资源放在最值得推进的客户上。'],growth:["SALES PERSPECTIVES",'卡住的时候，换一个思路看看。','这里提供经典销售与决策思想的可选参考，不要求学习进度，也不替你做最终判断。'],voice:["PERSONAL SALES VOICE",'把专业判断，说成自己真正会说的话。','个人表达资料库会随着本人样本持续更新；销售可以随时修改，最终以本人确认的习惯为准。']}[view];
+      document.querySelector('#heroEyebrow').textContent=hero[0];document.querySelector('#heroTitle').textContent=hero[1];document.querySelector('#heroSub').textContent=hero[2];
     }
     document.querySelectorAll('[data-view]').forEach(x=>x.onclick=()=>setView(x.dataset.view));
     document.querySelectorAll('[data-switch-growth]').forEach(x=>x.onclick=()=>setView('growth'));
@@ -373,7 +396,7 @@
       if(!value)return'未排期';const d=new Date(value);if(Number.isNaN(d.getTime()))return value;
       return d.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).replace(/\//g,'月').replace(',', '日');
     }
-    function visible(){return DATA.customers.filter(x=>(active==='all'||x.bucket===active)&&[x.name,x.stage,x.latest_update,x.next_action].join(' ').toLowerCase().includes(query))}
+    function visible(){return DATA.customers.filter(x=>(active==='all'||x.bucket===active)&&[x.name,x.stage,x.pipeline_stage,x.latest_update,x.next_action].join(' ').toLowerCase().includes(query))}
     function methodFor(x){
       if(x.bucket==='overdue'||x.bucket==='must')return'承诺闭环';
       if((x.risks||[]).length)return'异议拆解';
@@ -390,7 +413,7 @@
     function renderCards(){
       const rows=visible(),el=document.querySelector('#cards');
       if(!rows.length){el.innerHTML='<div class="empty">当前没有需要展示的客户任务。<br><span class="subtle">调整筛选条件，或更新客户的下一次跟进时间。</span></div>';return}
-      el.innerHTML=rows.map(x=>'<article class="card '+(done.has(x.customer_id)?'done':'')+'" style="--accent:'+tones[x.bucket]+'"><div class="cardhead"><div class="identity"><div class="avatar">'+esc((x.name||'?').slice(0,1))+'</div><div><div class="name">'+esc(x.name)+'</div><div class="meta">'+esc(x.stage||'阶段待确认')+' · '+esc(intentLabels[x.intent_level]||x.intent_level||'意向待确认')+'</div></div></div><span class="badge '+x.bucket+'">'+labels[x.bucket]+'</span></div><div class="reason"><strong>为什么现在跟</strong>'+esc(x.followup_reason||x.latest_update||'按既定节奏持续跟进')+'</div>'+((x.information_gaps||[]).length?'<div class="gapalert"><div class="gaphead"><strong>资料待补</strong><span>完整度 '+esc(x.information_completeness)+'%</span></div><div class="gapchips">'+x.information_gaps.slice(0,4).map(g=>'<span class="gapchip">'+esc(g.field)+'</span>').join('')+'</div><div class="gapquestion"><b>下次适合补问：</b>'+esc(x.information_gaps[0].question)+'</div></div>':'')+'<div class="facts"><div class="fact"><div class="factlabel">最新情况</div><div class="factvalue">'+esc(x.latest_update||'暂无新的业务进展')+'</div></div><div class="fact"><div class="factlabel">下一步动作</div><div class="factvalue">'+esc(x.next_action||'确认下一次沟通安排')+'</div></div><div class="fact"><div class="factlabel">时间与风险</div><div class="factvalue">'+esc(formatDate(x.next_followup_at))+'</div><div class="factvalue risktext">'+esc((x.risks||[]).join('；')||'暂无明确风险')+'</div></div></div>'+(x.reply_suggestion?'<div class="reply"><div class="replylabel">建议表达</div>'+esc(x.reply_suggestion)+'</div>':'')+'<div class="actions"><span class="methodhint">建议方法：'+methodFor(x)+'</span><div class="btngroup">'+(x.reply_suggestion?'<button class="btn" data-copy="'+esc(x.customer_id)+'">复制话术</button>':'')+'<button class="btn primary" data-done="'+esc(x.customer_id)+'">'+(done.has(x.customer_id)?'撤销完成':'标记完成')+'</button></div></div></article>').join('');
+      el.innerHTML=rows.map(x=>'<article class="card '+(done.has(x.customer_id)?'done':'')+'" style="--accent:'+tones[x.bucket]+'"><div class="cardhead"><div class="identity"><div class="avatar">'+esc((x.name||'?').slice(0,1))+'</div><div><div class="name">'+esc(x.name)+'</div><div class="meta">'+esc(x.pipeline_stage||x.stage||'阶段待确认')+' · '+esc(intentLabels[x.intent_level]||x.intent_level||'意向待确认')+'</div></div></div><span class="badge '+x.bucket+'">'+labels[x.bucket]+'</span></div><div class="reason"><strong>为什么现在跟</strong>'+esc(x.followup_reason||x.latest_update||'按既定节奏持续跟进')+'</div>'+((x.information_gaps||[]).length?'<div class="gapalert"><div class="gaphead"><strong>资料待补</strong><span>完整度 '+esc(x.information_completeness)+'%</span></div><div class="gapchips">'+x.information_gaps.slice(0,4).map(g=>'<span class="gapchip">'+esc(g.field)+'</span>').join('')+'</div><div class="gapquestion"><b>下次适合补问：</b>'+esc(x.information_gaps[0].question)+'</div></div>':'')+'<div class="facts"><div class="fact"><div class="factlabel">最新情况</div><div class="factvalue">'+esc(x.latest_update||'暂无新的业务进展')+'</div></div><div class="fact"><div class="factlabel">下一步动作</div><div class="factvalue">'+esc(x.next_action||'确认下一次沟通安排')+'</div></div><div class="fact"><div class="factlabel">时间与风险</div><div class="factvalue">'+esc(formatDate(x.next_followup_at))+'</div><div class="factvalue risktext">'+esc((x.risks||[]).join('；')||'暂无明确风险')+'</div></div></div>'+(x.reply_suggestion?'<div class="reply"><div class="replylabel">建议表达</div>'+esc(x.reply_suggestion)+'</div>':'')+'<div class="actions"><span class="methodhint">建议方法：'+methodFor(x)+'</span><div class="btngroup">'+(x.reply_suggestion?'<button class="btn" data-copy="'+esc(x.customer_id)+'">复制话术</button>':'')+'<button class="btn primary" data-done="'+esc(x.customer_id)+'">'+(done.has(x.customer_id)?'撤销完成':'标记完成')+'</button></div></div></article>').join('');
       document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const x=DATA.customers.find(v=>v.customer_id===b.dataset.copy);navigator.clipboard.writeText(x.reply_suggestion);b.textContent='已复制';setTimeout(()=>b.textContent='复制话术',1200)});
       document.querySelectorAll('[data-done]').forEach(b=>b.onclick=()=>{done.has(b.dataset.done)?done.delete(b.dataset.done):done.add(b.dataset.done);localStorage.setItem(storageKey,JSON.stringify([...done]));render()});
     }
@@ -414,7 +437,14 @@
       document.querySelector('#gapHeadline').textContent=incomplete.length?totalGaps+' 项关键信息待补':'当前客户资料较完整';
       document.querySelector('#gapAdvice').textContent=incomplete.length?'客户卡会优先显示最适合在下一次沟通中补问的问题。':'继续在新沟通后更新客户资料即可。';
     }
-    function render(){renderFilters();renderCards();renderProgress();updateRecommendation();renderVoice();renderGapSummary()}
+    function money(value){return new Intl.NumberFormat('zh-CN',{style:'currency',currency:'CNY',maximumFractionDigits:0}).format(Number(value)||0)}
+    function renderPipeline(){
+      const pipeline=DATA.pipeline||{},stages=pipeline.stages||[],stageTones=['#7295ec','#4f7be9','#3569e8','#2456d0','#18855d','#c83d4b'];
+      document.querySelector('#pipelineOpen').textContent=money(pipeline.open_amount);document.querySelector('#pipelineWeighted').textContent=money(pipeline.weighted_revenue);document.querySelector('#pipelineWon').textContent=money(pipeline.won_amount);document.querySelector('#pipelineRisks').textContent=pipeline.risk_count||0;
+      document.querySelector('#pipelineStages').innerHTML=stages.map((x,i)=>'<article class="funnelstage" style="--stage-tone:'+stageTones[i]+'"><small>'+esc(x.name)+'</small><b>'+esc(x.count)+'</b><span>'+money(x.amount)+'</span></article>').join('');
+      const rows=DATA.customers||[];document.querySelector('#pipelineRows').innerHTML=rows.length?rows.map(x=>'<tr><td class="customername">'+esc(x.name)+'</td><td><span class="stagepill '+(x.pipeline_stage==='赢单'?'won':x.pipeline_stage==='输单'?'lost':'')+'">'+esc(x.pipeline_stage||'初步接触')+'</span></td><td>'+money(x.opportunity_amount)+'</td><td>'+esc(x.win_probability||0)+'%</td><td>'+esc(x.expected_close_date||'待确认')+'</td><td>'+esc(formatDate(x.next_followup_at))+'</td><td>'+esc(x.next_action||'确认下一步')+'</td></tr>').join(''):'<tr><td colspan="7">暂无销售机会。录入新线索后会自动显示在这里。</td></tr>';
+    }
+    function render(){renderFilters();renderCards();renderProgress();updateRecommendation();renderVoice();renderGapSummary();renderPipeline()}
     document.querySelector('#search').oninput=e=>applySearch(e.target.value);
     const glass=document.querySelector('#glassBar');
     glass.onpointermove=e=>{const r=glass.getBoundingClientRect();glass.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%')};

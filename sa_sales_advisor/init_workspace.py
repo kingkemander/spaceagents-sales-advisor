@@ -37,6 +37,7 @@ def main() -> int:
         "customers",
         "dashboard",
         "plans",
+        "pipeline/reports",
         "exports/spacekb",
         "growth/reviews",
         "logs",
@@ -70,6 +71,8 @@ def main() -> int:
             indent=2,
         )
         + "\n",
+        "pipeline/leads.md": "# 销售线索\n\n由客户主数据自动生成。\n",
+        "pipeline/pipeline.md": "# 销售漏斗\n\n由客户主数据自动生成。\n",
         "indexes/material-index.json": json.dumps(
             {"schema_version": 1, "updated_at": now_iso(), "materials": []},
             ensure_ascii=False,

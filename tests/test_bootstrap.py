@@ -20,7 +20,7 @@ class WorkspaceAgentInstallTest(unittest.TestCase):
 
     def test_installs_and_updates_managed_workspace_agent(self):
         self.source.write_text(
-            "---\nmode: primary\n---\n" + bootstrap.MANAGED_AGENT_MARKER + "\n第一版\n",
+            "---\nmode: all\n---\n" + bootstrap.MANAGED_AGENT_MARKER + "\n第一版\n",
             encoding="utf-8",
         )
         workspace = self.root / "workspace"
@@ -28,10 +28,10 @@ class WorkspaceAgentInstallTest(unittest.TestCase):
         destination = workspace / ".opencode/agents/销售军师.md"
         self.assertEqual(result["workspace_agent"], "installed")
         self.assertEqual(result["workspace_agent_path"], str(destination))
-        self.assertIn("mode: primary", destination.read_text(encoding="utf-8"))
+        self.assertIn("mode: all", destination.read_text(encoding="utf-8"))
 
         self.source.write_text(
-            "---\nmode: primary\n---\n" + bootstrap.MANAGED_AGENT_MARKER + "\n第二版\n",
+            "---\nmode: all\n---\n" + bootstrap.MANAGED_AGENT_MARKER + "\n第二版\n",
             encoding="utf-8",
         )
         result = bootstrap.install_workspace_agent(workspace, self.runtime)
@@ -40,7 +40,7 @@ class WorkspaceAgentInstallTest(unittest.TestCase):
 
     def test_preserves_unmanaged_agent_with_same_name(self):
         self.source.write_text(
-            "---\nmode: primary\n---\n" + bootstrap.MANAGED_AGENT_MARKER + "\n插件版本\n",
+            "---\nmode: all\n---\n" + bootstrap.MANAGED_AGENT_MARKER + "\n插件版本\n",
             encoding="utf-8",
         )
         workspace = self.root / "workspace"

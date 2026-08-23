@@ -17,6 +17,7 @@ TOOLS = {
     "dashboard": "render_dashboard.py",
     "activity": "activity_store.py",
     "knowledge": "spacekb_client.py",
+    "pipeline": "pipeline_store.py",
 }
 
 
@@ -32,6 +33,7 @@ Usage:
   cli.py dashboard --workspace <SA销售工作区> [--date YYYY-MM-DD]
   cli.py activity <add|list> [options]
   cli.py knowledge <configure|status|list|chunks|search|upload|sync-daily> [options]
+  cli.py pipeline --workspace <SA销售工作区> [--date YYYY-MM-DD]
 """
 
 

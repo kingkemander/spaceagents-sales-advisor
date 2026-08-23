@@ -12,6 +12,7 @@ description: 把销售已确认的新材料和反馈合并进指定客户的动�
 1. 根据 customer_id 读取 `customer.json`、客户卡片、最新状态和最近时间线。
 2. 区分新事实、销售判断、AI 建议和冲突信息。
    同时检查 `source_channel`、`company_name`、`job_title`、`industry`、`needs`、`budget`、`timeline` 和 `decision_chain` 是否有新信息；缺失保持为空并进入待确认，不猜测补齐。
+   同时检查标准销售漏斗的 `pipeline_stage`、`opportunity_amount`、`expected_close_date` 和 `win_probability`。行业自定义进度写入 `stage`，标准阶段只使用“初步接触、需求确认、方案演示、报价谈判、赢单、输单”。
 3. 向用户展示将要修改的字段；涉及客户状态、成交、失单原因、金额、日期或承诺时必须确认。
 4. 将确认后的字段写成 JSON patch 文件，运行：
 
@@ -23,6 +24,7 @@ python3 "<运行时根目录>/sa_sales_advisor/cli.py" memory update --workspace
 6. 把本次已确认变化追加为新的时间线文件，不覆盖历史记录。
 7. 运行 `validate` 检查索引和目录一致性。
 8. 再次计算资料完整度。严重缺失且尚无补全任务时，读取 `<运行时根目录>/playbooks/schedule-sales-reminders/PLAYBOOK.md` 创建“补全客户资料”任务；已经存在同客户同类任务时更新，不重复创建。
+9. 客户阶段、金额、预计成交日期或跟进时间发生变化后，读取 `<运行时根目录>/playbooks/manage-sales-pipeline/PLAYBOOK.md` 刷新线索、漏斗和当日报告。
 
 ## 客户卡原则
 

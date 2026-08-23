@@ -14,6 +14,12 @@
 - `contacts`
 - `status`: `prospect`、`active`、`won`、`lost`、`paused`、`dormant`
 - `stage`
+- `pipeline_stage`: `初步接触`、`需求确认`、`方案演示`、`报价谈判`、`赢单`、`输单`
+- `opportunity_amount`: 机会预计金额，使用数字；币种另存 `currency`
+- `currency`: 默认 `CNY`
+- `expected_close_date`: 预计成交日期，`YYYY-MM-DD`
+- `win_probability`: 0–100 的整数
+- `stage_history`: 阶段变化记录，由运行时自动追加，不覆盖历史
 - `intent_level`: `high`、`medium`、`low`、`unknown`
 - `needs`
 - `budget`

@@ -7,8 +7,10 @@ import argparse
 import hashlib
 import json
 import re
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
+
+from pipeline_store import render as render_pipeline
 
 
 def now_iso() -> str:
@@ -86,6 +88,12 @@ def create_customer(args: argparse.Namespace) -> None:
         "contacts": [],
         "status": "prospect",
         "stage": "",
+        "pipeline_stage": "初步接触",
+        "opportunity_amount": None,
+        "currency": "CNY",
+        "expected_close_date": None,
+        "win_probability": 10,
+        "stage_history": [{"stage": "初步接触", "entered_at": created_at}],
         "intent_level": "unknown",
         "needs": [],
         "budget": "",
@@ -95,7 +103,7 @@ def create_customer(args: argparse.Namespace) -> None:
         "competitors": [],
         "last_contact_at": None,
         "next_followup_at": None,
-        "latest_update": "新建客户，等待材料确认",
+        "latest_update": "已建立首次联系，客户信息有待进一步补充",
         "followup_reason": "",
         "next_action": "",
         "reply_suggestion": "",
@@ -108,7 +116,7 @@ def create_customer(args: argparse.Namespace) -> None:
         "updated_at": created_at,
     }
     save_json(customer_dir / "customer.json", customer)
-    (customer_dir / "customer-card.md").write_text(f"# {args.name}｜客户卡片\n\n等待首次资料确认。\n", encoding="utf-8")
+    (customer_dir / "customer-card.md").write_text(f"# {args.name}｜客户卡片\n\n当前处于初步接触阶段，客户信息有待进一步补充。\n", encoding="utf-8")
     (customer_dir / "current-status.md").write_text(f"# {args.name}｜当前状态\n\n- 状态：潜在客户\n", encoding="utf-8")
     (customer_dir / "follow-up-plan.md").write_text(f"# {args.name}｜跟进计划\n\n- 下一步：待确认\n", encoding="utf-8")
     (customer_dir / "evidence-index.md").write_text(f"# {args.name}｜证据索引\n", encoding="utf-8")
@@ -125,6 +133,7 @@ def create_customer(args: argparse.Namespace) -> None:
     index.setdefault("customers", []).append(entry)
     index["updated_at"] = created_at
     save_json(index_path, index)
+    render_pipeline(root, date.today())
     print(json.dumps({"status": "created", **entry}, ensure_ascii=False, indent=2))
 
 

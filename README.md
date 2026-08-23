@@ -16,7 +16,7 @@ https://github.com/kingkemander/spaceagents-sales-advisor
 
 ### 方式二：上传 ZIP
 
-在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.10.2.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。上传包只包含运行必需文件，不携带宣传图或案例大图，避免安装材料进入模型上下文。
+在 GitHub Releases 下载最新的 `spaceagents-sales-advisor-v0.11.0.zip`，然后直接上传到 Space Agents 的技能/插件导入页面。上传包只包含运行必需文件，不携带宣传图或案例大图，避免安装材料进入模型上下文。
 
 仓库采用“一个插件、一个 Skill 入口、多个内部流程”的结构：
 
@@ -32,6 +32,7 @@ sa_sales_advisor/
   init_workspace.py
   ingest_store.py
   memory_store.py
+  pipeline_store.py
   render_dashboard.py
   templates/dashboard-template.html
   templates/sales-advisor-agent.md
@@ -44,6 +45,7 @@ playbooks/
   sync-spacekb/
   draft-sales-reply/
   coach-sales-growth/
+  manage-sales-pipeline/
 bootstrap.py
 ```
 
@@ -56,9 +58,11 @@ Space Agents 当前只导入 `SKILL.md` 也可以正常使用：首次调用时�
 - Space Agents 菜单里只显示 `sa-sales-advisor` 一个 Skill。
 - 用户用一句自然语言在当前工作区生成“销售军师”主智能体，生成后可在智能体选择器直接切换。
 - 内置 `generate-sales-advisor` 命令；当默认模型没有自动调用 Skill 时，一键完成相同注册，不需要用户编辑文件。
-- 该入口根据用户意图自动读取八个内部 Playbook，不需要用户选择子技能。
+- 该入口根据用户意图自动读取九个内部 Playbook，不需要用户选择子技能。
 - Python 运行包、HTML 模板和规则文件由入口 Skill 在首次调用时自动下载并校验。
 - 支持材料入库、客户记忆、个人口吻、每日文字行动、自动提醒与长期排期、回复草稿和可选策略参考七类流程。
+- 支持标准销售漏斗：初步接触、需求确认、方案演示、报价谈判、赢单/输单；记录金额、预计成交日期、成交概率、阶段历史和下一步动作。
+- 自动生成 `pipeline/leads.md`、`pipeline/pipeline.md` 和按日期归档的漏斗报告，包含阶段分布、转化率、加权预计收入、逾期与风险机会。
 - 用户明确说“下午三点提醒我”“每天告诉我该联系谁”“到点问我做完没有”时，入口会直接调用 SpaceAgents 自动任务能力；提醒触发时以文字列出客户、行动、原因和建议消息，不要求打开看板。
 - 支持生成未来六个月的阶段计划并保存到本地 `plans/`；默认只为关键节点创建提醒，不批量生成无价值的每日任务。
 - 销售看板每天正常生成并更新，但不会自动打开；日常提醒仍直接发送文字行动清单。
@@ -115,4 +119,4 @@ Space Agents 当前只导入 `SKILL.md` 也可以正常使用：首次调用时�
 
 ## 版本
 
-当前版本：`v0.10.2`。增加确定性的 `generate-sales-advisor` 注册命令，解决默认模型跳过 Skill、只检查旧运行时却误报“已生成”的问题；自然语言仍可优先使用，命令作为一键兜底。注册目标固定为当前工作区 `.opencode/agents/销售军师.md` 和 `mode: primary`，不修改电脑全局环境。
+当前版本：`v0.11.0`。销售军师智能体使用已验证可显示的 `mode: all`，并新增线索清单、标准销售漏斗、机会金额、预计成交日期、阶段历史、转化率、加权预计收入和风险机会报告。保留自然语言生成与 `generate-sales-advisor` 确定性命令，不修改电脑全局环境。
