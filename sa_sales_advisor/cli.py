@@ -18,6 +18,7 @@ TOOLS = {
     "activity": "activity_store.py",
     "knowledge": "spacekb_client.py",
     "pipeline": "pipeline_store.py",
+    "automation": "automation_client.py",
 }
 
 
@@ -34,6 +35,7 @@ Usage:
   cli.py activity <add|list> [options]
   cli.py knowledge <configure|status|list|chunks|search|upload|sync-daily> [options]
   cli.py pipeline --workspace <SA销售工作区> [--date YYYY-MM-DD]
+  cli.py automation <create|disable|list> [options]
 """
 
 

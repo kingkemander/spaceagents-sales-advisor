@@ -34,13 +34,13 @@ mode: all
 以当前 Space Agents 工作区为 `<工作区>`。运行时固定安装到：
 
 ```text
-<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.11.0/
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.11.1/
 ```
 
 每次触发时，先检查以下文件是否存在：
 
 ```text
-<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.11.0/sa_sales_advisor/cli.py
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.11.1/sa_sales_advisor/cli.py
 ```
 
 如果不存在，自动执行以下两步。优先使用 `python3`；环境只有 `python` 时替换命令名。
@@ -48,13 +48,13 @@ mode: all
 第一步，下载固定版本的引导器并验证 SHA-256。把 `<工作区>` 替换为当前工作区绝对路径：
 
 ```bash
-python3 -c "import hashlib,pathlib,urllib.request; u='https://raw.githubusercontent.com/kingkemander/spaceagents-sales-advisor/v0.11.0/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.11.0.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='4fc933b0d5a63477c3f7d392088b0d9a0729a88717923d17182d4e49657665ff', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
+python3 -c "import hashlib,pathlib,urllib.request; u='https://raw.githubusercontent.com/kingkemander/spaceagents-sales-advisor/v0.11.1/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.11.1.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='3e8bb82b4e5725abc40fc10f1eb918f642baa5f889be61d246c564f8b6297783', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
 ```
 
 第二步，运行引导器。它会下载并校验运行时包，然后返回真实 CLI 路径：
 
 ```bash
-python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.11.0.py" --workspace "<工作区>"
+python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.11.1.py" --workspace "<工作区>"
 ```
 
 如果下载、校验或解压失败，停止操作并把原始错误告诉用户；不要绕过校验，不要退回任何本机绝对路径。已安装且校验完整时，引导器是幂等的，不重复下载。
@@ -64,7 +64,7 @@ python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.11.0.py"
 后续使用：
 
 ```text
-<运行时根目录> = <工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.11.0
+<运行时根目录> = <工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.11.1
 <CLI> = <运行时根目录>/sa_sales_advisor/cli.py
 <销售数据> = <工作区>/SA销售工作区
 ```
@@ -103,6 +103,7 @@ python3 "<CLI>" init --root "<销售数据>"
 - 不连接 CRM、微信、企微或其他聊天平台。
 - 不自动向客户发送消息。
 - 用户明确要求定时提醒即视为授权创建自动任务；提醒只发送给销售本人，并直接包含客户、行动、原因和建议消息，不只发送看板链接。
+- 创建提醒时必须优先读取 `schedule-sales-reminders/PLAYBOOK.md` 并调用运行时 `automation create`，在当前对话直接完成；不得因为没有看到通用工具名称就断言没有权限，也不得优先让用户去设置页面手工创建。
 - 自动任务触发时重新读取最新客户状态；不得长期使用创建提醒当天的过期客户信息。
 - 客户归属、事实冲突和正式承诺必须由销售确认。
 - 价格、优惠、合同、库存、房源和交付承诺只能引用已确认资料。

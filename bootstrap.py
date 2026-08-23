@@ -16,12 +16,12 @@ from datetime import datetime
 from pathlib import Path
 
 
-VERSION = "0.11.0"
+VERSION = "0.11.1"
 RUNTIME_URL = (
     "https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/"
-    "v0.11.0/spaceagents-sales-advisor-runtime-v0.11.0.zip"
+    "v0.11.1/spaceagents-sales-advisor-runtime-v0.11.1.zip"
 )
-RUNTIME_SHA256 = "24a78aeec8f70e0d21943d514e166941d76d3925c5ac6e44d1a8affc4e2bafc2"
+RUNTIME_SHA256 = "04bf5dbfb5501eb56ae3e5befb9b68fdc9191706be3bc4dc4af0c6811ebc5637"
 MANAGED_AGENT_MARKER = "<!-- managed-by-spaceagents-sales-advisor -->"
 
 
@@ -59,6 +59,7 @@ def valid_runtime(path: Path) -> bool:
         path / "sa_sales_advisor/spacekb_client.py",
         path / "sa_sales_advisor/presentation.py",
         path / "sa_sales_advisor/pipeline_store.py",
+        path / "sa_sales_advisor/automation_client.py",
         path / "sa_sales_advisor/templates/dashboard-template.html",
         path / "playbooks/ingest-customer-materials/PLAYBOOK.md",
         path / "playbooks/maintain-customer-memory/PLAYBOOK.md",
@@ -80,7 +81,7 @@ def valid_runtime(path: Path) -> bool:
 
 
 def download(url: str, destination: Path) -> None:
-    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.11.0"})
+    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.11.1"})
     with urllib.request.urlopen(request, timeout=60) as response, destination.open("wb") as output:
         shutil.copyfileobj(response, output)
 
