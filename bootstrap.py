@@ -18,12 +18,12 @@ from datetime import datetime
 from pathlib import Path
 
 
-VERSION = "0.12.1"
+VERSION = "0.13.0"
 RUNTIME_URL = (
     "https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/"
-    "v0.12.1/spaceagents-sales-advisor-runtime-v0.12.1.zip"
+    "v0.13.0/spaceagents-sales-advisor-runtime-v0.13.0.zip"
 )
-RUNTIME_SHA256 = "5059390850ecfd6f70a0459ddd1acf746b106f70e96190b69f24e5b7909fb9db"
+RUNTIME_SHA256 = "cb128a26cc8f684914b30fdc7c953a7f5b20ed65d1c50e7e1fa5635b8651110e"
 MANAGED_AGENT_MARKER = "<!-- managed-by-spaceagents-sales-advisor -->"
 
 
@@ -64,6 +64,8 @@ def valid_runtime(path: Path) -> bool:
         path / "sa_sales_advisor/automation_client.py",
         path / "sa_sales_advisor/update_client.py",
         path / "sa_sales_advisor/system_reminder.py",
+        path / "sa_sales_advisor/company_radar.py",
+        path / "sa_sales_advisor/company_radar_confirm.py",
         path / "scripts/voice-alarm/macos/alarm-reminder.sh",
         path / "scripts/voice-alarm/macos/schedule-alarm.sh",
         path / "sa_sales_advisor/templates/dashboard-template.html",
@@ -80,6 +82,7 @@ def valid_runtime(path: Path) -> bool:
         path / "playbooks/draft-sales-reply/references/customer-decision-psychology.md",
         path / "playbooks/coach-sales-growth/PLAYBOOK.md",
         path / "playbooks/manage-sales-pipeline/PLAYBOOK.md",
+        path / "playbooks/company-intelligence-radar/PLAYBOOK.md",
         path / "sa_sales_advisor/templates/sales-advisor-agent.md",
         path / "VERSION",
     ]
@@ -87,7 +90,7 @@ def valid_runtime(path: Path) -> bool:
 
 
 def download(url: str, destination: Path) -> None:
-    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.12.1"})
+    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.13.0"})
     with urllib.request.urlopen(request, timeout=60) as response, destination.open("wb") as output:
         shutil.copyfileobj(response, output)
 

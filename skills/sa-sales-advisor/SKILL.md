@@ -34,13 +34,13 @@ mode: all
 以当前 Space Agents 工作区为 `<工作区>`。基础运行时固定安装到：
 
 ```text
-<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.12.1/
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.13.0/
 ```
 
 每次触发时都执行下面两步。引导器是幂等的：基础运行时完整时不会重复下载，并且至多每 24 小时检查一次 GitHub 最新正式版。
 
 ```text
-<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.12.1/sa_sales_advisor/cli.py
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.13.0/sa_sales_advisor/cli.py
 ```
 
 优先使用 `python3`；环境只有 `python` 时替换命令名。
@@ -48,13 +48,13 @@ mode: all
 第一步，下载固定版本的引导器并验证 SHA-256。把 `<工作区>` 替换为当前工作区绝对路径：
 
 ```bash
-python3 -c "import hashlib,pathlib,urllib.request; u='https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/v0.12.1/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.12.1.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='6096cf1aa8897041c7ead2e86ec5675dad8cd52e51322de2246825669788f777', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
+python3 -c "import hashlib,pathlib,urllib.request; u='https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/v0.13.0/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.13.0.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='8c880b6f91760ac75a6ed8c0bea379ce5ae41c72400e11edc1d8fd02f77c1d44', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
 ```
 
 第二步，运行引导器。它会下载并校验运行时包，然后返回真实 CLI 路径：
 
 ```bash
-python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.12.1.py" --workspace "<工作区>"
+python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.13.0.py" --workspace "<工作区>"
 ```
 
 如果基础运行时下载、校验或解压失败，停止操作并把原始错误告诉用户；不要绕过校验，不要退回任何本机绝对路径。更新检查失败时继续使用当前可用版本，只在用户询问版本或更新状态时说明，不阻断销售任务。
@@ -97,12 +97,13 @@ python3 "<CLI>" init --root "<销售数据>"
 - 分析客户为什么犹豫、客户可能怎么想，或根据企业知识、客户画像、全球销售思想、决策心理和个人口吻起草回复：`<运行时根目录>/playbooks/draft-sales-reply/PLAYBOOK.md`
 - 全球销售思想、相似场景、可选策略灵感与用户主动发起的复盘：`<运行时根目录>/playbooks/coach-sales-growth/PLAYBOOK.md`
 - 新线索、机会金额、标准销售阶段、漏斗概览、转化率、收入预测和风险机会：`<运行时根目录>/playbooks/manage-sales-pipeline/PLAYBOOK.md`
+- 客户企业最新招投标、中标、项目、经营、融资招聘、司法风险和官方新闻：`<运行时根目录>/playbooks/company-intelligence-radar/PLAYBOOK.md`
 
 一个请求涉及多个阶段时，按“材料确认入库 → 更新客户记忆 → 匹配方法与相似案例 → 规划下一步 → 按个人口吻起草回复”的顺序执行；只有用户主动要求时才做沟通复盘。不要求用户选择子技能，不让用户重复提供已有信息。
 
 ## 固定边界
 
-- 只处理用户直接上传、明确指定的本地材料，或用户主动配置并有权访问的 SpaceKB 知识库内容。
+- 只处理用户直接上传、明确指定的本地材料、用户主动配置并有权访问的 SpaceKB 知识库，以及为当前客户企业核验而查询的公开网页。公开网页必须遵守企业动态雷达的来源、核验与访问边界。
 - 不连接 CRM、微信、企微或其他聊天平台。
 - 不自动向客户发送消息。
 - 用户明确要求定时提醒即视为授权创建本机语音闹钟；默认不创建 SpaceAgents 自动任务，不新开对话。
@@ -124,6 +125,8 @@ python3 "<CLI>" init --root "<销售数据>"
 - SpaceKB API Key 不写进 Skill、GitHub、客户档案、日志或自动任务；只保存到当前用户本机 `.spaceagents/secrets/` 私有配置，首次验证成功后不再重复询问。
 - SpaceKB 配置成功后创建每天 18:00 私人域同步任务，只上传当天完成事项、重要节点和未来七天安排的摘要，不上传全量客户原件。
 - 客户卡片、当前状态、跟进计划、每日作战台和回复草稿只输出可直接使用的业务结论；识别模型、OCR、入库过程、文件路径和技术日志只留在内部溯源层，绝不出现在销售界面。
+- 企业外部动态必须先完成主体匹配和原文核验；缺少企业法定全称或统一社会信用代码时只能保存待核验线索，搜索摘要不得写入正式客户事实。
+- 查询企业动态时优先使用官方公开来源，遇到验证码、登录、403、429 或访问控制时停止并降级，不绕过反爬限制。
 
 ## 完成标准
 

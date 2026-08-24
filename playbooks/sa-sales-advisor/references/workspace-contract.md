@@ -11,6 +11,8 @@ SA销售工作区/
 ├── indexes/
 │   ├── customer-index.json
 │   ├── material-index.json
+│   ├── company-identity-index.json
+│   ├── company-intelligence.jsonl
 │   ├── reminder-index.json
 │   └── ingestion-ledger.jsonl
 ├── customers/{customer-folder}/

@@ -26,7 +26,10 @@ class PluginContractTest(unittest.TestCase):
         self.assertIn('"pipeline": "pipeline_store.py"', cli)
         self.assertIn('"update": "update_client.py"', cli)
         self.assertIn('"system-reminder": "system_reminder.py"', cli)
+        self.assertIn('"company-radar": "company_radar.py"', cli)
+        self.assertTrue((ROOT / "sa_sales_advisor/company_radar_confirm.py").is_file())
         self.assertTrue((ROOT / "scripts/voice-alarm/macos/alarm-reminder.sh").is_file())
+        self.assertTrue((ROOT / "playbooks/company-intelligence-radar/PLAYBOOK.md").is_file())
 
     def test_skill_uses_dynamic_runtime_pointer_and_auto_update(self):
         skill = (ROOT / "skills/sa-sales-advisor/SKILL.md").read_text(encoding="utf-8")

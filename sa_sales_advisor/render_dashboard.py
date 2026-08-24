@@ -106,6 +106,42 @@ def sales_voice_profile(root: Path) -> dict:
     }
 
 
+def company_intelligence(root: Path, today: date) -> tuple[dict, dict]:
+    verified, pending = {}, {}
+    path = root / "indexes/company-intelligence.jsonl"
+    if not path.is_file():
+        return verified, pending
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            item = json.loads(line)
+        except ValueError:
+            continue
+        customer_id = str(item.get("customer_id") or "")
+        if not customer_id:
+            continue
+        if item.get("verification_status") == "pending":
+            pending[customer_id] = pending.get(customer_id, 0) + 1
+            continue
+        if item.get("verification_status") != "verified":
+            continue
+        published = parse_day(item.get("published_at"))
+        verified.setdefault(customer_id, []).append({
+            "evidence_id": item.get("evidence_id"),
+            "title": clean_public_text(item.get("title"), "企业动态"),
+            "event_type": clean_public_text(item.get("event_type"), "其他"),
+            "company_role": clean_public_text(item.get("company_role"), "角色待确认"),
+            "summary": clean_public_text(item.get("summary"), "详见公开原文"),
+            "published_at": item.get("published_at"),
+            "source_name": clean_public_text(item.get("source_name"), "公开原文"),
+            "source_url": item.get("source_url"),
+            "recent": bool(published and published >= today - timedelta(days=90)),
+        })
+    for records in verified.values():
+        records.sort(key=lambda item: item.get("published_at") or "", reverse=True)
+        del records[3:]
+    return verified, pending
+
+
 def parse_day(value):
     if not value:
         return None
@@ -144,6 +180,7 @@ def main() -> int:
     root = Path(args.workspace).expanduser().resolve()
     today = date.fromisoformat(args.date) if args.date else date.today()
     customers = []
+    intelligence, intelligence_pending = company_intelligence(root, today)
     stage_counts = {stage: 0 for stage in STAGES}
     stage_amounts = {stage: 0.0 for stage in STAGES}
     open_amount = 0.0
@@ -181,6 +218,9 @@ def main() -> int:
             "risks": clean_public_value(customer.get("risks", [])),
             "information_gaps": clean_public_value(gaps),
             "information_completeness": completeness,
+            "company_intelligence": intelligence.get(customer.get("customer_id"), []),
+            "company_intelligence_pending": intelligence_pending.get(customer.get("customer_id"), 0),
+            "dynamic_trigger": any(item.get("recent") for item in intelligence.get(customer.get("customer_id"), [])),
             "bucket": bucket,
             "priority": score,
         }

@@ -150,6 +150,10 @@
     .focus b{display:block;margin:4px 0 3px}
     .focus p{margin:0;color:var(--muted);font-size:12px}
     .gapalert{margin:0 0 15px;padding:13px 14px;border-radius:15px;background:linear-gradient(135deg,#fff8e9,#fffdf7);border:1px solid rgba(202,132,22,.14)}
+    .intelligence{margin:15px 0 0;padding:14px;border-radius:17px;background:linear-gradient(145deg,rgba(238,242,255,.86),rgba(248,250,255,.72));border:1px solid rgba(86,103,190,.14)}
+    .intelhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:7px}.intelhead strong{font-size:13px;color:#33417d}.intelhead span{font-size:10px;color:#6d7792}
+    .intelitem{display:grid;grid-template-columns:76px 1fr auto;gap:10px;align-items:start;padding:10px 0;border-top:1px solid rgba(95,108,166,.12)}.intelitem:first-of-type{border-top:0}
+    .inteldate{font-size:10px;color:#78819a;padding-top:2px}.intelbody b{display:block;font-size:12px;margin-bottom:3px}.intelbody p{margin:0;color:#5d667c;font-size:11px;line-height:1.65}.intellink{color:#4767c8;text-decoration:none;font-size:11px;font-weight:700;white-space:nowrap}.intellink:hover{text-decoration:underline}.pendingnote{margin-top:7px;font-size:10px;color:#8a6a2f}
     .gaphead{display:flex;justify-content:space-between;align-items:center;gap:12px}.gaphead strong{color:#8b5a12;font-size:12px}.gaphead span{font-size:11px;color:#a16b1d}
     .gapchips{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}.gapchip{font-size:10px;padding:4px 7px;border-radius:8px;background:rgba(176,111,14,.08);color:#815515}
     .gapquestion{font-size:11px;color:#6e5b3d}.gapquestion b{color:#76501a}
@@ -336,7 +340,7 @@
 
   <script>
     const DATA=__DASHBOARD_DATA_JSON__;
-    const labels={all:'全部',overdue:'已逾期',must:'今天必跟',suggested:'建议跟进',risk:'风险关注',waiting:'暂缓'};
+    const labels={all:'全部',overdue:'已逾期',must:'今天必跟',suggested:'建议跟进',risk:'风险关注',waiting:'暂缓',dynamic:'企业动态'};
     const intentLabels={high:'高意向',medium:'中意向',low:'低意向',unknown:'意向待确认'};
     const tones={must:'#235ee7',suggested:'#18855d',overdue:'#c83d4b',risk:'#a5660a',waiting:'#8791a0'};
     const methodLibrary={
@@ -379,7 +383,7 @@
     document.addEventListener('keydown',e=>{if(e.key==='Escape')setSearchOpen(false);if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();setSearchOpen(true)}});
     document.addEventListener('click',e=>{if(!searchPanel.contains(e.target)&&!searchToggle.contains(e.target))setSearchOpen(false)});
 
-    function counts(){return Object.fromEntries(Object.keys(labels).slice(1).map(k=>[k,DATA.customers.filter(x=>x.bucket===k).length]))}
+    function counts(){return Object.fromEntries(Object.keys(labels).slice(1).map(k=>[k,DATA.customers.filter(x=>k==='dynamic'?x.dynamic_trigger:x.bucket===k).length]))}
     function renderStats(){
       const c=counts();
       document.querySelector('#stats').innerHTML=['must','suggested','overdue','risk','waiting'].map(k=>'<article class="stat" style="--tone:'+tones[k]+'"><div class="statlabel">'+labels[k]+'</div><div class="statline"><b>'+c[k]+'</b><i></i></div></article>').join('');
@@ -396,7 +400,11 @@
       if(!value)return'未排期';const d=new Date(value);if(Number.isNaN(d.getTime()))return value;
       return d.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).replace(/\//g,'月').replace(',', '日');
     }
-    function visible(){return DATA.customers.filter(x=>(active==='all'||x.bucket===active)&&[x.name,x.stage,x.pipeline_stage,x.latest_update,x.next_action].join(' ').toLowerCase().includes(query))}
+    function visible(){return DATA.customers.filter(x=>(active==='all'||(active==='dynamic'?x.dynamic_trigger:x.bucket===active))&&[x.name,x.stage,x.pipeline_stage,x.latest_update,x.next_action,...(x.company_intelligence||[]).flatMap(i=>[i.title,i.summary,i.event_type])].join(' ').toLowerCase().includes(query))}
+    function renderIntelligence(x){
+      const records=x.company_intelligence||[],pending=x.company_intelligence_pending||0;if(!records.length&&!pending)return'';
+      return '<section class="intelligence"><div class="intelhead"><strong>企业最新动态</strong><span>'+records.length+' 条来源已核验</span></div>'+records.map(i=>'<div class="intelitem"><span class="inteldate">'+esc(i.published_at||'日期待确认')+'</span><div class="intelbody"><b>'+esc(i.event_type)+' · '+esc(i.title)+'</b><p>'+esc(i.summary)+' · '+esc(i.company_role)+'</p></div><a class="intellink" href="'+esc(i.source_url)+'" target="_blank" rel="noopener noreferrer">查看原文 ↗</a></div>').join('')+(pending?'<div class="pendingnote">另有 '+pending+' 条相关信息待进一步确认</div>':'')+'</section>';
+    }
     function methodFor(x){
       if(x.bucket==='overdue'||x.bucket==='must')return'承诺闭环';
       if((x.risks||[]).length)return'异议拆解';
@@ -413,7 +421,7 @@
     function renderCards(){
       const rows=visible(),el=document.querySelector('#cards');
       if(!rows.length){el.innerHTML='<div class="empty">当前没有需要展示的客户任务。<br><span class="subtle">调整筛选条件，或更新客户的下一次跟进时间。</span></div>';return}
-      el.innerHTML=rows.map(x=>'<article class="card '+(done.has(x.customer_id)?'done':'')+'" style="--accent:'+tones[x.bucket]+'"><div class="cardhead"><div class="identity"><div class="avatar">'+esc((x.name||'?').slice(0,1))+'</div><div><div class="name">'+esc(x.name)+'</div><div class="meta">'+esc(x.pipeline_stage||x.stage||'阶段待确认')+' · '+esc(intentLabels[x.intent_level]||x.intent_level||'意向待确认')+'</div></div></div><span class="badge '+x.bucket+'">'+labels[x.bucket]+'</span></div><div class="reason"><strong>为什么现在跟</strong>'+esc(x.followup_reason||x.latest_update||'按既定节奏持续跟进')+'</div>'+((x.information_gaps||[]).length?'<div class="gapalert"><div class="gaphead"><strong>资料待补</strong><span>完整度 '+esc(x.information_completeness)+'%</span></div><div class="gapchips">'+x.information_gaps.slice(0,4).map(g=>'<span class="gapchip">'+esc(g.field)+'</span>').join('')+'</div><div class="gapquestion"><b>下次适合补问：</b>'+esc(x.information_gaps[0].question)+'</div></div>':'')+'<div class="facts"><div class="fact"><div class="factlabel">最新情况</div><div class="factvalue">'+esc(x.latest_update||'暂无新的业务进展')+'</div></div><div class="fact"><div class="factlabel">下一步动作</div><div class="factvalue">'+esc(x.next_action||'确认下一次沟通安排')+'</div></div><div class="fact"><div class="factlabel">时间与风险</div><div class="factvalue">'+esc(formatDate(x.next_followup_at))+'</div><div class="factvalue risktext">'+esc((x.risks||[]).join('；')||'暂无明确风险')+'</div></div></div>'+(x.reply_suggestion?'<div class="reply"><div class="replylabel">建议表达</div>'+esc(x.reply_suggestion)+'</div>':'')+'<div class="actions"><span class="methodhint">建议方法：'+methodFor(x)+'</span><div class="btngroup">'+(x.reply_suggestion?'<button class="btn" data-copy="'+esc(x.customer_id)+'">复制话术</button>':'')+'<button class="btn primary" data-done="'+esc(x.customer_id)+'">'+(done.has(x.customer_id)?'撤销完成':'标记完成')+'</button></div></div></article>').join('');
+      el.innerHTML=rows.map(x=>'<article class="card '+(done.has(x.customer_id)?'done':'')+'" style="--accent:'+tones[x.bucket]+'"><div class="cardhead"><div class="identity"><div class="avatar">'+esc((x.name||'?').slice(0,1))+'</div><div><div class="name">'+esc(x.name)+'</div><div class="meta">'+esc(x.pipeline_stage||x.stage||'阶段待确认')+' · '+esc(intentLabels[x.intent_level]||x.intent_level||'意向待确认')+'</div></div></div><span class="badge '+x.bucket+'">'+labels[x.bucket]+'</span></div><div class="reason"><strong>为什么现在跟</strong>'+esc(x.followup_reason||x.latest_update||'按既定节奏持续跟进')+'</div>'+((x.information_gaps||[]).length?'<div class="gapalert"><div class="gaphead"><strong>资料待补</strong><span>完整度 '+esc(x.information_completeness)+'%</span></div><div class="gapchips">'+x.information_gaps.slice(0,4).map(g=>'<span class="gapchip">'+esc(g.field)+'</span>').join('')+'</div><div class="gapquestion"><b>下次适合补问：</b>'+esc(x.information_gaps[0].question)+'</div></div>':'')+'<div class="facts"><div class="fact"><div class="factlabel">最新情况</div><div class="factvalue">'+esc(x.latest_update||'暂无新的业务进展')+'</div></div><div class="fact"><div class="factlabel">下一步动作</div><div class="factvalue">'+esc(x.next_action||'确认下一次沟通安排')+'</div></div><div class="fact"><div class="factlabel">时间与风险</div><div class="factvalue">'+esc(formatDate(x.next_followup_at))+'</div><div class="factvalue risktext">'+esc((x.risks||[]).join('；')||'暂无明确风险')+'</div></div></div>'+renderIntelligence(x)+(x.reply_suggestion?'<div class="reply"><div class="replylabel">建议表达</div>'+esc(x.reply_suggestion)+'</div>':'')+'<div class="actions"><span class="methodhint">建议方法：'+methodFor(x)+'</span><div class="btngroup">'+(x.reply_suggestion?'<button class="btn" data-copy="'+esc(x.customer_id)+'">复制话术</button>':'')+'<button class="btn primary" data-done="'+esc(x.customer_id)+'">'+(done.has(x.customer_id)?'撤销完成':'标记完成')+'</button></div></div></article>').join('');
       document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=()=>{const x=DATA.customers.find(v=>v.customer_id===b.dataset.copy);navigator.clipboard.writeText(x.reply_suggestion);b.textContent='已复制';setTimeout(()=>b.textContent='复制话术',1200)});
       document.querySelectorAll('[data-done]').forEach(b=>b.onclick=()=>{done.has(b.dataset.done)?done.delete(b.dataset.done):done.add(b.dataset.done);localStorage.setItem(storageKey,JSON.stringify([...done]));render()});
     }

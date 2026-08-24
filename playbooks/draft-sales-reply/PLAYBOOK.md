@@ -10,7 +10,7 @@ description: 根据企业已确认知识、指定客户的最新档案与证据�
 每次起草前读取：
 
 1. 企业事实：项目、产品、价格和政策的已确认资料。SpaceKB 已配置且问题涉及企业知识时，先读取 `<运行时根目录>/playbooks/sync-spacekb/PLAYBOOK.md` 查询相关内容。
-2. 客户事实：`customer.json`、客户卡和最近相关时间线。
+2. 客户事实：`customer.json`、客户卡和最近相关时间线；如已存在企业动态，只读取 `verification_status=verified` 且与当前机会相关的记录，待核验线索不得作为回复事实。
 3. 专业推理：必须读取 [references/global-sales-wisdom.md](references/global-sales-wisdom.md) 和 [references/customer-decision-psychology.md](references/customer-decision-psychology.md)，再结合 `config/sales-method-library.md` 与 [references/scenario-method-cards.md](references/scenario-method-cards.md)。
 4. 相似案例：同类阶段、异议和结果的已脱敏复盘卡；没有真实案例时不得虚构。
 5. 个人口吻：`config/sales-soul.md`，作为强制最终表达层，而不是可选修饰。
@@ -28,6 +28,8 @@ description: 根据企业已确认知识、指定客户的最新档案与证据�
 7. 先在内部完成“高级销售会怎么想”，再强制按 `sales-soul.md` 改写成销售本人会说的话。最终版本必须核对称呼、句长、消息分段、语气强弱、常用开场、推进方式、收尾习惯和禁止表达；不把内部分析过程发给客户。
 8. 给出首选草稿、必要时给短版，并注明发送后要观察的客户信号。
 9. 使用 [assets/reply-output-template.md](assets/reply-output-template.md) 输出人工审核点和本次成长要点。
+
+当用户问“根据这家公司最近动态怎么联系”时，先读取 `<运行时根目录>/playbooks/company-intelligence-radar/PLAYBOOK.md`。企业动态只提供沟通切入点，仍需结合客户本人需求和当前阶段；不得因为公司发生某个公开事件就断言联系人一定需要购买。
 
 如果个人表达资料库仍为 `provisional` 或有效样本不足，不得声称“完全像本人”。先按已经确认的稳定特征生成，并提醒销售可用“这句话不像我”或“把这段计入我的口吻样本”继续校正。
 

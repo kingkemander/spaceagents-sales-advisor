@@ -4,6 +4,6 @@ description: 在当前工作区确定性生成可出现在主下拉中的“销�
 
 请先执行下面的注册命令，再根据命令输出向用户汇报。不得只检查旧运行时，不得在命令成功前宣称智能体已经生成。
 
-!`python3 -c "import hashlib,pathlib,urllib.request; u='https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/v0.12.1/bootstrap.py'; p=pathlib.Path.cwd()/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.12.1.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='6096cf1aa8897041c7ead2e86ec5675dad8cd52e51322de2246825669788f777', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d)" && python3 ".spaceagents/plugins/sa-sales-advisor/bootstrap-v0.12.1.py" --workspace "."`
+!`python3 -c "import hashlib,pathlib,urllib.request; u='https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/v0.13.0/bootstrap.py'; p=pathlib.Path.cwd()/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.13.0.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='8c880b6f91760ac75a6ed8c0bea379ce5ae41c72400e11edc1d8fd02f77c1d44', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d)" && python3 ".spaceagents/plugins/sa-sales-advisor/bootstrap-v0.13.0.py" --workspace "."`
 
 只有命令输出包含 `workspace_agent` 为 `installed` 或 `ready`，并且路径为当前工作区 `.opencode/agents/销售军师.md` 时，才告诉用户“销售军师智能体已生成”。如果命令失败，原样说明错误，不得降级为手写 `subagent`。

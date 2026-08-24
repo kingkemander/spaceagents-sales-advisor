@@ -79,6 +79,19 @@ def main() -> int:
             indent=2,
         )
         + "\n",
+        "indexes/company-identity-index.json": json.dumps(
+            {"schema_version": 1, "updated_at": now_iso(), "companies": {}},
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        "indexes/company-intelligence.jsonl": "",
+        "indexes/company-intelligence-confirmations.json": json.dumps(
+            {"schema_version": 1, "updated_at": now_iso(), "confirmations": {}},
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
         "indexes/ingestion-ledger.jsonl": "",
         "dashboard/dashboard-data.json": json.dumps(
             {"schema_version": 1, "generated_at": None, "date": None, "customers": []},
