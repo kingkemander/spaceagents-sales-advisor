@@ -34,13 +34,13 @@ mode: all
 以当前 Space Agents 工作区为 `<工作区>`。基础运行时固定安装到：
 
 ```text
-<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.12.0/
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.12.1/
 ```
 
 每次触发时都执行下面两步。引导器是幂等的：基础运行时完整时不会重复下载，并且至多每 24 小时检查一次 GitHub 最新正式版。
 
 ```text
-<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.12.0/sa_sales_advisor/cli.py
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.12.1/sa_sales_advisor/cli.py
 ```
 
 优先使用 `python3`；环境只有 `python` 时替换命令名。
@@ -48,13 +48,13 @@ mode: all
 第一步，下载固定版本的引导器并验证 SHA-256。把 `<工作区>` 替换为当前工作区绝对路径：
 
 ```bash
-python3 -c "import hashlib,pathlib,urllib.request; u='https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/v0.12.0/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.12.0.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='2ba013a853420583b3a75c53c39e509ad1e0c096f1ca1a1bd4500875867d6390', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
+python3 -c "import hashlib,pathlib,urllib.request; u='https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/v0.12.1/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.12.1.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='6096cf1aa8897041c7ead2e86ec5675dad8cd52e51322de2246825669788f777', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
 ```
 
 第二步，运行引导器。它会下载并校验运行时包，然后返回真实 CLI 路径：
 
 ```bash
-python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.12.0.py" --workspace "<工作区>"
+python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.12.1.py" --workspace "<工作区>"
 ```
 
 如果基础运行时下载、校验或解压失败，停止操作并把原始错误告诉用户；不要绕过校验，不要退回任何本机绝对路径。更新检查失败时继续使用当前可用版本，只在用户询问版本或更新状态时说明，不阻断销售任务。
@@ -105,10 +105,10 @@ python3 "<CLI>" init --root "<销售数据>"
 - 只处理用户直接上传、明确指定的本地材料，或用户主动配置并有权访问的 SpaceKB 知识库内容。
 - 不连接 CRM、微信、企微或其他聊天平台。
 - 不自动向客户发送消息。
-- 用户明确要求定时提醒即视为授权创建自动任务；提醒只发送给销售本人，并直接包含客户、行动、原因和建议消息，不只发送看板链接。
-- 创建提醒时必须优先读取 `schedule-sales-reminders/PLAYBOOK.md` 并调用运行时 `automation create`，在当前对话直接完成；不得因为没有看到通用工具名称就断言没有权限，也不得优先让用户去设置页面手工创建。
-- 用户明确要求“语音提醒”“闹钟提醒”或“到点念出来”时，直接在 `automation create` 追加 `--voice`，由 macOS 的 `launchd + say + afplay` 或 Windows 的任务计划程序 + 系统语音实现；不生成视频，不要求 SpaceAgents 保持打开。
-- 自动任务触发时重新读取最新客户状态；不得长期使用创建提醒当天的过期客户信息。
+- 用户明确要求定时提醒即视为授权创建本机语音闹钟；默认不创建 SpaceAgents 自动任务，不新开对话。
+- 创建提醒时读取 `schedule-sales-reminders/PLAYBOOK.md`，在当前对话调用 `automation create --delivery system`；先生成本地音频文件，再由 macOS `launchd + afplay` 或 Windows 任务计划程序 + `SoundPlayer` 到点直接播放。
+- 到点时不调用模型、不读取客户档案、不向 SpaceAgents 任务发送消息；创建时就把提醒压缩为“对象 + 唯一动作 + 完成确认”的短句。
+- 只有用户明确说“在 SpaceAgents 对话里提醒”时才使用 `--delivery spaceagents`；本机提醒不弹桌面通知、通知栏气泡或任务栏文字。
 - 客户归属、事实冲突和正式承诺必须由销售确认。
 - 价格、优惠、合同、库存、房源和交付承诺只能引用已确认资料。
 - 客户事实、销售判断和 AI 建议分开保存。
@@ -117,7 +117,7 @@ python3 "<CLI>" init --root "<销售数据>"
 - 所有图片（包括超长聊天截图）先整图调用 `qwen3.7-plus`，失败后整图调用 `glm-5.2`，两者均失败才使用跨平台 RapidOCR；不调用 `analyze-image` 附件扩展。
 - 图片识别、聊天式补充、客户匹配和画像草稿完成后，只向用户展示一次最终确认；确认前不写正式档案。
 - 每次更新客户记忆时检查来源渠道、公司、职位、行业、需求、预算、周期和决策关系；缺失项保持为空，并在作战台给出一个自然的补问建议，不猜测补齐。
-- 客户资料严重缺失但用户选择先录入时，必须给销售本人创建补全资料任务；SpaceAgents 自动任务不可用时，对一次性任务自动降级为 macOS 提醒事项或 Windows 当前用户计划任务，系统兜底也失败时才写入本地提醒索引并如实说明。
+- 客户资料严重缺失但用户选择先录入时，必须给销售本人创建补全资料提醒；默认直接生成本机语音文件并创建系统播放计划，失败时才写入本地提醒索引并如实说明。
 - 个人口吻只学习销售本人确认过的工作表达；维护样本数量、稳定特征和禁止表达，使作战台个人表达卡与后续回复同步更新。
 - 所有客户回复先结合已确认企业/知识库事实、客户状态和最适用的销售思想完成内部判断，再强制按照 `sales-soul.md` 的本人表达习惯改写；销售方法不得直接堆进客户话术。
 - 每日跟进正常更新 HTML 看板但不自动打开；提醒同时直接发送文字行动清单。

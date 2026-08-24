@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "channel": "stable",
-  "version": "0.12.0",
-  "runtime_url": "https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/v0.12.0/spaceagents-sales-advisor-runtime-v0.12.0.zip",
-  "runtime_sha256": "f3370095a9576203070db2e91328acbf11904a8fbd84dea8fa806da63cbe0482",
+  "version": "0.12.1",
+  "runtime_url": "https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/v0.12.1/spaceagents-sales-advisor-runtime-v0.12.1.zip",
+  "runtime_sha256": "5059390850ecfd6f70a0459ddd1acf746b106f70e96190b69f24e5b7909fb9db",
   "published_at": "2026-08-24T00:00:00+08:00"
 }

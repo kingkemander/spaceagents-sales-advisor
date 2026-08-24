@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create an explicit one-time reminder using macOS or Windows system services."""
+"""Pre-generate audio reminders and schedule local playback on macOS or Windows."""
 
 from __future__ import annotations
 
@@ -36,42 +36,14 @@ def parse_trigger(date_value: str | None, time_value: str) -> datetime:
     return trigger
 
 
-def macos_reminder(title: str, message: str, trigger: datetime) -> str:
-    script = r'''
-on run argv
-  set itemTitle to item 1 of argv
-  set itemBody to item 2 of argv
-  set alarmDate to current date
-  set year of alarmDate to (item 3 of argv as integer)
-  set month of alarmDate to (item 4 of argv as integer)
-  set day of alarmDate to (item 5 of argv as integer)
-  set time of alarmDate to ((item 6 of argv as integer) * hours + (item 7 of argv as integer) * minutes)
-  tell application "Reminders"
-    set targetList to default list
-    set createdItem to make new reminder at end of reminders of targetList with properties {name:itemTitle, body:itemBody, due date:alarmDate, remind me date:alarmDate}
-    return id of createdItem
-  end tell
-end run
-'''
-    result = subprocess.run(
-        [
-            "osascript", "-", title, message,
-            str(trigger.year), str(trigger.month), str(trigger.day),
-            str(trigger.hour), str(trigger.minute),
-        ],
-        input=script,
-        text=True,
-        capture_output=True,
-        check=False,
-        timeout=30,
-    )
-    if result.returncode != 0:
-        raise SystemExit(f"macOS Reminders creation failed: {result.stderr.strip()}")
-    return result.stdout.strip() or "created"
-
-
 def macos_voice_reminder(
-    workspace: Path, reminder_id: str, title: str, message: str, trigger: datetime, repeat: int
+    workspace: Path,
+    reminder_id: str,
+    title: str,
+    message: str,
+    trigger: datetime,
+    repeat: int,
+    schedule: str,
 ) -> str:
     reminder_dir = workspace / ".spaceagents/plugins/sa-sales-advisor/system-reminders"
     reminder_dir.mkdir(parents=True, exist_ok=True)
@@ -79,20 +51,39 @@ def macos_voice_reminder(
     launch_agents = Path.home() / "Library/LaunchAgents"
     launch_agents.mkdir(parents=True, exist_ok=True)
     plist_path = launch_agents / f"{label}.plist"
+    audio_path = reminder_dir / f"{reminder_id}.aiff"
     alarm_script = Path(__file__).resolve().parents[1] / "scripts/voice-alarm/macos/alarm-reminder.sh"
     if not alarm_script.is_file():
         raise SystemExit("bundled macOS voice alarm script is missing")
+    synthesis = subprocess.run(
+        ["/usr/bin/say", "-o", str(audio_path), message],
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=60,
+    )
+    if synthesis.returncode != 0 or not audio_path.is_file():
+        audio_path.unlink(missing_ok=True)
+        raise SystemExit(f"macOS reminder audio generation failed: {synthesis.stderr.strip()}")
+    calendar: dict[str, int] = {"Hour": trigger.hour, "Minute": trigger.minute}
+    if schedule == "once":
+        calendar.update({"Month": trigger.month, "Day": trigger.day})
+    elif schedule == "weekly":
+        calendar["Weekday"] = (trigger.weekday() + 1) % 7
+    cleanup_label = label if schedule == "once" else ""
+    cleanup_plist = str(plist_path) if schedule == "once" else ""
     payload = {
         "Label": label,
         "ProgramArguments": [
-            "/bin/bash", str(alarm_script), message, str(repeat), label, str(plist_path), title
+            "/bin/bash",
+            str(alarm_script),
+            str(audio_path),
+            str(repeat),
+            cleanup_label,
+            cleanup_plist,
+            str(audio_path) if schedule == "once" else "",
         ],
-        "StartCalendarInterval": {
-            "Month": trigger.month,
-            "Day": trigger.day,
-            "Hour": trigger.hour,
-            "Minute": trigger.minute,
-        },
+        "StartCalendarInterval": calendar,
         "RunAtLoad": False,
         "StandardOutPath": str(reminder_dir / f"{reminder_id}.out.log"),
         "StandardErrorPath": str(reminder_dir / f"{reminder_id}.error.log"),
@@ -108,6 +99,7 @@ def macos_voice_reminder(
     )
     if result.returncode != 0:
         plist_path.unlink(missing_ok=True)
+        audio_path.unlink(missing_ok=True)
         raise SystemExit(f"macOS scheduled voice reminder failed: {result.stderr.strip()}")
     return label
 
@@ -117,38 +109,67 @@ def powershell_encoded(script: str) -> str:
 
 
 def windows_reminder(
-    workspace: Path, reminder_id: str, title: str, message: str, trigger: datetime, voice: bool = False
+    workspace: Path,
+    reminder_id: str,
+    title: str,
+    message: str,
+    trigger: datetime,
+    repeat: int = 3,
+    schedule: str = "once",
 ) -> str:
     reminder_dir = workspace / ".spaceagents/plugins/sa-sales-advisor/system-reminders"
     reminder_dir.mkdir(parents=True, exist_ok=True)
     alert_file = reminder_dir / f"{reminder_id}.ps1"
+    audio_file = reminder_dir / f"{reminder_id}.wav"
     task_name = f"SA Sales Advisor {reminder_id}"
-    title64 = base64.b64encode(title.encode("utf-8")).decode("ascii")
     message64 = base64.b64encode(message.encode("utf-8")).decode("ascii")
-    voice_lines = (
-        "Add-Type -AssemblyName System.Speech\n"
-        "$speaker=New-Object System.Speech.Synthesis.SpeechSynthesizer\n"
-        "$speaker.Speak($message)\n"
-        if voice else ""
+    cleanup_lines = (
+        "Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue\n"
+        "Remove-Item -LiteralPath $PSCommandPath -Force -ErrorAction SilentlyContinue\n"
+        "Remove-Item -LiteralPath $audioPath -Force -ErrorAction SilentlyContinue\n"
+        if schedule == "once" else ""
     )
+    audio_literal = str(audio_file).replace("'", "''")
     alert_content = (
-        "$title=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('" + title64 + "'))\n"
-        "$message=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('" + message64 + "'))\n"
-        + "$taskName='" + task_name.replace("'", "''") + "'\n"
-        + "[console]::Beep(880,500)\n"
-        + voice_lines
-        + "Add-Type -AssemblyName PresentationFramework\n"
-        + "[System.Windows.MessageBox]::Show($message,$title,'OK','Information') | Out-Null\n"
-        + "Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue\n"
-        + "Remove-Item -LiteralPath $PSCommandPath -Force -ErrorAction SilentlyContinue\n"
+        "$taskName='" + task_name.replace("'", "''") + "'\n"
+        + "$audioPath='" + audio_literal + "'\n"
+        + "$player=New-Object System.Media.SoundPlayer $audioPath\n"
+        + "1.." + str(repeat) + " | ForEach-Object { $player.PlaySync() }\n"
+        + cleanup_lines
     )
     alert_file.write_text(alert_content, encoding="utf-8-sig")
+    synthesis_script = (
+        "Add-Type -AssemblyName System.Speech\n"
+        "$speaker=New-Object System.Speech.Synthesis.SpeechSynthesizer\n"
+        "$message=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('" + message64 + "'))\n"
+        "$speaker.SetOutputToWaveFile('" + audio_literal + "')\n"
+        "$speaker.Speak($message)\n"
+        "$speaker.Dispose()\n"
+    )
+    synthesis = subprocess.run(
+        ["powershell.exe", "-NoProfile", "-NonInteractive", "-EncodedCommand", powershell_encoded(synthesis_script)],
+        text=True,
+        capture_output=True,
+        check=False,
+        timeout=60,
+    )
+    if synthesis.returncode != 0 or not audio_file.is_file():
+        alert_file.unlink(missing_ok=True)
+        audio_file.unlink(missing_ok=True)
+        raise SystemExit(f"Windows reminder audio generation failed: {synthesis.stderr.strip()}")
     path_literal = str(alert_file).replace("'", "''")
     task_literal = task_name.replace("'", "''")
     when = trigger.strftime("%Y-%m-%dT%H:%M:%S")
+    if schedule == "once":
+        trigger_command = f"New-ScheduledTaskTrigger -Once -At ([datetime]::ParseExact('{when}','yyyy-MM-ddTHH:mm:ss',[Globalization.CultureInfo]::InvariantCulture))"
+    elif schedule == "daily":
+        trigger_command = f"New-ScheduledTaskTrigger -Daily -At ([datetime]::ParseExact('{when}','yyyy-MM-ddTHH:mm:ss',[Globalization.CultureInfo]::InvariantCulture))"
+    else:
+        weekday = trigger.strftime("%A")
+        trigger_command = f"New-ScheduledTaskTrigger -Weekly -DaysOfWeek {weekday} -At ([datetime]::ParseExact('{when}','yyyy-MM-ddTHH:mm:ss',[Globalization.CultureInfo]::InvariantCulture))"
     registration = f"""
 $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument '-NoProfile -ExecutionPolicy Bypass -File "{path_literal}"'
-$trigger = New-ScheduledTaskTrigger -Once -At ([datetime]::ParseExact('{when}','yyyy-MM-ddTHH:mm:ss',[Globalization.CultureInfo]::InvariantCulture))
+$trigger = {trigger_command}
 $principal = New-ScheduledTaskPrincipal -UserId ([System.Security.Principal.WindowsIdentity]::GetCurrent().Name) -LogonType Interactive -RunLevel Limited
 Register-ScheduledTask -TaskName '{task_literal}' -Action $action -Trigger $trigger -Principal $principal -Force | Out-Null
 """
@@ -161,6 +182,7 @@ Register-ScheduledTask -TaskName '{task_literal}' -Action $action -Trigger $trig
     )
     if result.returncode != 0:
         alert_file.unlink(missing_ok=True)
+        audio_file.unlink(missing_ok=True)
         raise SystemExit(f"Windows Task Scheduler creation failed: {result.stderr.strip()}")
     return task_name
 
@@ -172,26 +194,54 @@ def append_index(workspace: Path, entry: dict) -> None:
         handle.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
+def list_index(workspace: Path) -> list[dict]:
+    path = workspace / ".spaceagents/plugins/sa-sales-advisor/system-reminders.jsonl"
+    if not path.is_file():
+        return []
+    latest: dict[str, dict] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            item = json.loads(line)
+        except ValueError:
+            continue
+        reminder_id = str(item.get("reminder_id", ""))
+        if reminder_id:
+            latest[reminder_id] = item
+    return sorted(latest.values(), key=lambda item: str(item.get("trigger_at", "")))
+
+
 def create(args: argparse.Namespace) -> dict:
     workspace = Path(args.workspace).expanduser().resolve()
     message = Path(args.message_file).expanduser().read_text(encoding="utf-8").strip()
     if not message:
         raise SystemExit("message file is empty")
+    if len(message) > 300:
+        raise SystemExit("desktop reminder message must be 300 characters or fewer")
     trigger = parse_trigger(args.date, args.time)
     reminder_id = "sa-" + uuid.uuid4().hex[:12]
     system = platform.system()
     if system == "Darwin":
-        if args.voice:
-            native_id = macos_voice_reminder(
-                workspace, reminder_id, args.title.strip(), message, trigger, args.repeat
-            )
-            backend = "macos-launchd-voice"
-        else:
-            native_id = macos_reminder(args.title.strip(), message, trigger)
-            backend = "macos-reminders"
+        native_id = macos_voice_reminder(
+            workspace,
+            reminder_id,
+            args.title.strip(),
+            message,
+            trigger,
+            args.repeat,
+            args.schedule,
+        )
+        backend = "macos-launchd-audio"
     elif system == "Windows":
-        native_id = windows_reminder(workspace, reminder_id, args.title.strip(), message, trigger, args.voice)
-        backend = "windows-task-scheduler-voice" if args.voice else "windows-task-scheduler"
+        native_id = windows_reminder(
+            workspace,
+            reminder_id,
+            args.title.strip(),
+            message,
+            trigger,
+            args.repeat,
+            args.schedule,
+        )
+        backend = "windows-task-scheduler-audio"
     else:
         raise SystemExit("system reminder fallback currently supports macOS and Windows only")
     result = {
@@ -201,25 +251,34 @@ def create(args: argparse.Namespace) -> dict:
         "backend": backend,
         "title": args.title.strip(),
         "trigger_at": trigger.isoformat(timespec="minutes"),
-        "voice": bool(args.voice),
-        "repeat": args.repeat if args.voice else 0,
+        "voice": True,
+        "audio_pre_generated": True,
+        "repeat": args.repeat,
+        "schedule": args.schedule,
     }
     append_index(workspace, result)
     return result
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Create a native one-time sales reminder")
+    parser = argparse.ArgumentParser(description="Create an audible desktop sales reminder")
     parser.add_argument("--workspace", required=True)
-    parser.add_argument("--title", required=True)
-    parser.add_argument("--message-file", required=True)
-    parser.add_argument("--time", required=True)
+    parser.add_argument("--title")
+    parser.add_argument("--message-file")
+    parser.add_argument("--time")
     parser.add_argument("--date")
-    parser.add_argument("--voice", action="store_true", help="Play a spoken reminder at the scheduled time")
+    parser.add_argument("--schedule", choices=["once", "daily", "weekly"], default="once")
     parser.add_argument("--repeat", type=int, default=3, choices=range(1, 6))
+    parser.add_argument("--list", action="store_true")
     args = parser.parse_args()
-    if not args.title.strip():
+    workspace = Path(args.workspace).expanduser().resolve()
+    if args.list:
+        print(json.dumps({"status": "ok", "reminders": list_index(workspace)}, ensure_ascii=False, indent=2))
+        return 0
+    if not args.title or not args.title.strip():
         raise SystemExit("title is required")
+    if not args.message_file or not args.time:
+        raise SystemExit("message-file and time are required")
     print(json.dumps(create(args), ensure_ascii=False, indent=2))
     return 0
 

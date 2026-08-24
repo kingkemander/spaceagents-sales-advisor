@@ -7,9 +7,13 @@ import sys
 import tempfile
 import threading
 import unittest
+from argparse import Namespace
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Optional
+from unittest.mock import patch
+
+from sa_sales_advisor import automation_client
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -110,7 +114,7 @@ class AutomationClientTest(unittest.TestCase):
         result = self.run_cli(
             "automation", "create", "--workspace", str(self.workspace),
             "--name", "吴总行动确认", "--prompt-file", str(self.prompt),
-            "--schedule", "once", "--time", "23:20",
+            "--schedule", "once", "--time", "23:20", "--delivery", "spaceagents",
         )
         output = json.loads(result.stdout)
         task = AutomationApiHandler.tasks["task-001"]
@@ -128,7 +132,7 @@ class AutomationClientTest(unittest.TestCase):
         self.run_cli(
             "automation", "create", "--workspace", str(self.workspace),
             "--name", "每日行动", "--prompt-file", str(self.prompt),
-            "--schedule", "daily", "--time", "08:45",
+            "--schedule", "daily", "--time", "08:45", "--delivery", "spaceagents",
         )
         task = AutomationApiHandler.tasks["task-001"]
         self.assertEqual(task["schedule"], "daily")
@@ -144,7 +148,7 @@ class AutomationClientTest(unittest.TestCase):
         self.run_cli(
             "automation", "create", "--workspace", str(self.workspace),
             "--name", "每日行动", "--prompt-file", str(self.prompt),
-            "--schedule", "daily", "--time", "09:15",
+            "--schedule", "daily", "--time", "09:15", "--delivery", "spaceagents",
         )
         self.assertEqual(set(AutomationApiHandler.tasks), {"existing"})
         self.assertEqual(AutomationApiHandler.tasks["existing"]["time"], "09:15")
@@ -154,9 +158,27 @@ class AutomationClientTest(unittest.TestCase):
         env = dict(os.environ)
         env.pop("OPENWORK_SERVER_URL", None)
         env.pop("OPENWORK_SERVER_TOKEN", None)
-        result = self.run_cli("automation", "list", env=env, check=False)
+        result = self.run_cli("automation", "list", "--delivery", "spaceagents", env=env, check=False)
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("automation API is unavailable", result.stderr)
+
+    def test_system_delivery_does_not_call_spaceagents_api(self):
+        args = Namespace(
+            delivery="system",
+            workspace=str(self.workspace),
+            name="回客户消息提醒",
+            prompt_file=str(self.prompt),
+            schedule="once",
+            time="10:20",
+            date=None,
+            repeat=3,
+        )
+        with patch.object(automation_client.platform, "system", return_value="Darwin"), patch.object(
+            automation_client, "create_system_reminder"
+        ) as system_create:
+            automation_client.create(args)
+        system_create.assert_called_once_with(args)
+        self.assertEqual(AutomationApiHandler.calls, [])
 
 
 if __name__ == "__main__":

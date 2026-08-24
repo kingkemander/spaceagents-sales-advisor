@@ -1,6 +1,6 @@
 #!/bin/bash
 # Compatibility entry for the standalone SalesVoiceAlarm Skill.
-# Preferred plugin entry: cli.py system-reminder ... --voice
+# Preferred plugin entry: cli.py system-reminder ...
 
 set -euo pipefail
 
@@ -35,5 +35,4 @@ TIME_ONLY="${TIME_STR##* }"
   --message-file "$MESSAGE_FILE" \
   --date "$TARGET_DATE" \
   --time "$TIME_ONLY" \
-  --voice \
   --repeat "$REPEAT"

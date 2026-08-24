@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create and manage SpaceAgents automations through its authenticated local API."""
+"""Create local audio reminders, with SpaceAgents automations as an explicit opt-in."""
 
 from __future__ import annotations
 
@@ -181,16 +181,16 @@ def create_system_reminder(args: argparse.Namespace, fallback_cause: BaseExcepti
         args.prompt_file,
         "--time",
         args.time,
+        "--schedule",
+        args.schedule,
     ]
     if args.date:
         command.extend(["--date", args.date])
-    if args.voice:
-        command.extend(["--voice", "--repeat", str(args.repeat)])
+    command.extend(["--repeat", str(args.repeat)])
     result = subprocess.run(command, check=False, capture_output=True, text=True)
     if result.returncode != 0:
         raise SystemExit(
-            "SpaceAgents automatic task and system reminder fallback both failed: "
-            + result.stderr.strip()
+            "local audio reminder creation failed: " + result.stderr.strip()
         ) from fallback_cause
     output = json.loads(result.stdout)
     if fallback_cause is not None:
@@ -199,21 +199,12 @@ def create_system_reminder(args: argparse.Namespace, fallback_cause: BaseExcepti
 
 
 def create(args: argparse.Namespace) -> None:
-    if args.voice:
-        if args.schedule != "once":
-            raise SystemExit("voice alarm currently supports one-time reminders only")
+    if args.delivery == "system":
         if platform.system() not in {"Darwin", "Windows"}:
-            raise SystemExit("voice alarm currently supports macOS and Windows only")
+            raise SystemExit("desktop reminders currently support macOS and Windows only")
         create_system_reminder(args)
         return
-
-    try:
-        create_spaceagents(args)
-        return
-    except SystemExit as original_error:
-        if not args.system_fallback or args.schedule != "once" or platform.system() not in {"Darwin", "Windows"}:
-            raise
-        create_system_reminder(args, original_error)
+    create_spaceagents(args)
 
 
 def disable(args: argparse.Namespace) -> None:
@@ -221,7 +212,19 @@ def disable(args: argparse.Namespace) -> None:
     print(json.dumps({"status": "disabled", "task_id": args.task_id, "name": task.get("name", "")}, ensure_ascii=False, indent=2))
 
 
-def list_tasks(_: argparse.Namespace) -> None:
+def list_tasks(args: argparse.Namespace) -> None:
+    if args.delivery == "system":
+        cli = Path(__file__).resolve().parent / "cli.py"
+        result = subprocess.run(
+            [sys.executable, str(cli), "system-reminder", "--workspace", args.workspace, "--list"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            raise SystemExit(result.stderr.strip())
+        print(result.stdout.strip())
+        return
     tasks = request_json("GET", "/automations/tasks").get("tasks", [])
     public = [
         {key: item.get(key) for key in ["id", "name", "schedule", "time", "workspaceId", "enabled"]}
@@ -242,10 +245,8 @@ def main() -> int:
     create_cmd.add_argument("--date", help="Optional YYYY-MM-DD date for a one-time reminder")
     create_cmd.add_argument("--agent", default="销售军师")
     create_cmd.add_argument("--model", help="Optional providerID/modelID; defaults to the agent model")
-    create_cmd.add_argument("--voice", action="store_true", help="Use an audible macOS/Windows voice alarm")
+    create_cmd.add_argument("--delivery", choices=["system", "spaceagents"], default="system")
     create_cmd.add_argument("--repeat", type=int, default=3, choices=range(1, 6))
-    create_cmd.add_argument("--no-system-fallback", action="store_false", dest="system_fallback")
-    create_cmd.set_defaults(system_fallback=True)
     create_cmd.set_defaults(func=create)
 
     disable_cmd = sub.add_parser("disable")
@@ -253,6 +254,8 @@ def main() -> int:
     disable_cmd.set_defaults(func=disable)
 
     list_cmd = sub.add_parser("list")
+    list_cmd.add_argument("--workspace", default=".")
+    list_cmd.add_argument("--delivery", choices=["system", "spaceagents"], default="system")
     list_cmd.set_defaults(func=list_tasks)
     args = parser.parse_args()
     args.func(args)
