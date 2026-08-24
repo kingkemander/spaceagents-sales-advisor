@@ -1,5 +1,18 @@
 # 变更记录
 
+## [v1.2] - 2026-08-24
+
+### 修复
+
+- macOS 语音提醒不再让 `launchd` 读取 Downloads 工作区里的脚本、AIFF 或消息文件。
+- 固定播报脚本部署到 `~/Library/Application Support/SalesVoiceAlarm/`，提醒短句通过 plist 参数传入，到点由系统 `say` 实时播报。
+- 系统日志同步移到 Application Support，避免受保护目录权限导致任务退出。
+
+### 保持不变
+
+- Windows 继续使用任务计划程序和预生成 WAV 播放。
+- 仍然只做语音提醒，不创建 SpaceAgents 自动任务、不新开对话、不弹桌面通知。
+
 ## [v1.1] - 2026-08-24
 
 ### 新增

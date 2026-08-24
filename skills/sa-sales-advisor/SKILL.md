@@ -34,13 +34,13 @@ mode: all
 以当前 Space Agents 工作区为 `<工作区>`。基础运行时固定安装到：
 
 ```text
-<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.13.0/
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.13.1/
 ```
 
 每次触发时都执行下面两步。引导器是幂等的：基础运行时完整时不会重复下载，并且至多每 24 小时检查一次 GitHub 最新正式版。
 
 ```text
-<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.13.0/sa_sales_advisor/cli.py
+<工作区>/.spaceagents/plugins/sa-sales-advisor/runtime-v0.13.1/sa_sales_advisor/cli.py
 ```
 
 优先使用 `python3`；环境只有 `python` 时替换命令名。
@@ -48,13 +48,13 @@ mode: all
 第一步，下载固定版本的引导器并验证 SHA-256。把 `<工作区>` 替换为当前工作区绝对路径：
 
 ```bash
-python3 -c "import hashlib,pathlib,urllib.request; u='https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/v0.13.0/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.13.0.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='8c880b6f91760ac75a6ed8c0bea379ce5ae41c72400e11edc1d8fd02f77c1d44', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
+python3 -c "import hashlib,pathlib,urllib.request; u='https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/v0.13.1/bootstrap.py'; p=pathlib.Path(r'<工作区>')/'.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.13.1.py'; p.parent.mkdir(parents=True,exist_ok=True); d=urllib.request.urlopen(u,timeout=60).read(); h=hashlib.sha256(d).hexdigest(); assert h=='323093cc5f7f92c78006cc55e23839c5edef4367f6911572b830821efcfa3855', f'bootstrap checksum mismatch: {h}'; p.write_bytes(d); print(p)"
 ```
 
 第二步，运行引导器。它会下载并校验运行时包，然后返回真实 CLI 路径：
 
 ```bash
-python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.13.0.py" --workspace "<工作区>"
+python3 "<工作区>/.spaceagents/plugins/sa-sales-advisor/bootstrap-v0.13.1.py" --workspace "<工作区>"
 ```
 
 如果基础运行时下载、校验或解压失败，停止操作并把原始错误告诉用户；不要绕过校验，不要退回任何本机绝对路径。更新检查失败时继续使用当前可用版本，只在用户询问版本或更新状态时说明，不阻断销售任务。
@@ -107,7 +107,7 @@ python3 "<CLI>" init --root "<销售数据>"
 - 不连接 CRM、微信、企微或其他聊天平台。
 - 不自动向客户发送消息。
 - 用户明确要求定时提醒即视为授权创建本机语音闹钟；默认不创建 SpaceAgents 自动任务，不新开对话。
-- 创建提醒时读取 `schedule-sales-reminders/PLAYBOOK.md`，在当前对话调用 `automation create --delivery system`；先生成本地音频文件，再由 macOS `launchd + afplay` 或 Windows 任务计划程序 + `SoundPlayer` 到点直接播放。
+- 创建提醒时读取 `schedule-sales-reminders/PLAYBOOK.md`，在当前对话调用 `automation create --delivery system`；macOS 把播放器部署到 Application Support 后由 `launchd + say` 到点播报，Windows 由任务计划程序 + `SoundPlayer` 到点播放。
 - 到点时不调用模型、不读取客户档案、不向 SpaceAgents 任务发送消息；创建时就把提醒压缩为“对象 + 唯一动作 + 完成确认”的短句。
 - 只有用户明确说“在 SpaceAgents 对话里提醒”时才使用 `--delivery spaceagents`；本机提醒不弹桌面通知、通知栏气泡或任务栏文字。
 - 客户归属、事实冲突和正式承诺必须由销售确认。

@@ -1,6 +1,6 @@
 ---
 name: schedule-sales-reminders
-description: 把销售提出的“下午三点提醒我”“两分钟后叫我回客户”“到点问我做完没有”“每天用声音提醒”等要求转换为预先生成的本地音频，并由 macOS 或 Windows 到点直接播放。用户要求定时、语音、循环、节点或长期销售排期时使用；默认不创建 SpaceAgents 自动任务，不新开对话，也不弹桌面通知。
+description: 把销售提出的“下午三点提醒我”“两分钟后叫我回客户”“到点问我做完没有”“每天用声音提醒”等要求转换为 macOS 或 Windows 本机语音任务并到点直接播报。用户要求定时、语音、循环、节点或长期销售排期时使用；默认不创建 SpaceAgents 自动任务，不新开对话，也不弹桌面通知。
 ---
 
 # 销售提醒与排期
@@ -22,7 +22,7 @@ description: 把销售提出的“下午三点提醒我”“两分钟后叫我�
 1. 用户明确说“提醒我”“每天告诉我”“到时候问我”即视为创建授权，不再重复确认。
 2. 从用户原话提取时间、时区、重复规则、客户和动作。使用当前本地时区；创建前把相对时间解析为明确日期时间。
 3. 仅在时间确实无法判断、指定时间已经过去且无法确定用户指今天还是明天、或缺少必要客户/事项时，询问一个最小问题。
-4. 当前对话先生成音频文件，再调用系统调度器创建本机提醒；不要打开设置页，不要创建 SpaceAgents 自动任务，不要用网页模拟点击。创建成功后返回提醒名称、首次触发时间、音频文件已生成和播报次数。
+4. 当前对话确定最终播报短句，再调用系统调度器创建本机提醒；不要打开设置页，不要创建 SpaceAgents 自动任务，不要用网页模拟点击。创建成功后返回提醒名称、首次触发时间、系统语音方式和播报次数。
 5. 创建前检查相同标题、客户、时间和重复规则的任务；已有相同任务时更新，不重复创建。
 6. 所有提醒默认只播放语音，不弹桌面横幅、通知栏气泡或任务栏弹窗。
 7. 只有用户明确说“在 SpaceAgents 对话里提醒我”时才传 `--delivery spaceagents`；其他情况一律使用默认的 `system`。
@@ -44,12 +44,12 @@ python3 "<运行时根目录>/sa_sales_advisor/cli.py" automation create \
 ```
 
 - `--workspace` 必须传当前 SpaceAgents 项目根目录，不能传 `SA销售工作区` 子目录。
-- 命令输出 `status: created-system-reminder`，并包含 `trigger_at`、`audio_pre_generated: true` 和 `voice: true` 才算创建成功。
+- 命令输出 `status: created-system-reminder`，并包含 `trigger_at` 和 `voice: true` 才算创建成功。macOS 还应返回 `backend: macos-launchd-live-voice` 与 `synthesis_at_trigger: true`。
 - `once` 播报完成后自动删除系统任务；`daily` 和 `weekly` 保留并按固定周期触发。
 - 用户说“查看我的提醒”时运行 `automation list --workspace "<工作区>"`，默认读取本机提醒索引。
 - 创建过程发生在当前对话；到点不运行模型、不读取客户档案、不向任何 SpaceAgents 对话发消息。
 
-- macOS：创建时用系统语音生成独立 AIFF 音频；`launchd` 到点用 `afplay` 直接播放 1–5 次，随后卸载任务并删除一次性音频。
+- macOS：把固定播报脚本部署到 `~/Library/Application Support/SalesVoiceAlarm/`，plist 只引用该非保护目录；提醒短句作为 `ProgramArguments` 写入 plist，`launchd` 到点调用系统 `say` 播报 1–5 次。不得让后台任务读取 Downloads 工作区里的脚本、音频或消息文件。
 - Windows：创建时用系统语音生成独立 WAV 音频；任务计划程序到点用 `SoundPlayer` 直接播放 1–5 次，随后删除一次性任务、脚本和音频。
 - 提醒内容应是短句，例如“给吴总发送看楼时间确认，这件事完成了吗？”；不要把整份客户档案或内部操作提示词拿去播报。
 - 不生成视频。音频播报比启动视频播放器更快，也不会受到默认播放器、窗口焦点和视频编码影响。

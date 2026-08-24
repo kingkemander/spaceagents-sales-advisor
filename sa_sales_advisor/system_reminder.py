@@ -10,6 +10,7 @@ import os
 import platform
 import plistlib
 import re
+import shutil
 import subprocess
 import uuid
 from datetime import datetime, timedelta
@@ -45,26 +46,20 @@ def macos_voice_reminder(
     repeat: int,
     schedule: str,
 ) -> str:
-    reminder_dir = workspace / ".spaceagents/plugins/sa-sales-advisor/system-reminders"
-    reminder_dir.mkdir(parents=True, exist_ok=True)
     label = "com.spaceagents.salesadvisor." + reminder_id.replace("-", "")
     launch_agents = Path.home() / "Library/LaunchAgents"
     launch_agents.mkdir(parents=True, exist_ok=True)
     plist_path = launch_agents / f"{label}.plist"
-    audio_path = reminder_dir / f"{reminder_id}.aiff"
-    alarm_script = Path(__file__).resolve().parents[1] / "scripts/voice-alarm/macos/alarm-reminder.sh"
-    if not alarm_script.is_file():
+    support_dir = Path.home() / "Library/Application Support/SalesVoiceAlarm"
+    support_dir.mkdir(parents=True, exist_ok=True)
+    bundled_script = Path(__file__).resolve().parents[1] / "scripts/voice-alarm/macos/alarm-reminder.sh"
+    if not bundled_script.is_file():
         raise SystemExit("bundled macOS voice alarm script is missing")
-    synthesis = subprocess.run(
-        ["/usr/bin/say", "-o", str(audio_path), message],
-        text=True,
-        capture_output=True,
-        check=False,
-        timeout=60,
-    )
-    if synthesis.returncode != 0 or not audio_path.is_file():
-        audio_path.unlink(missing_ok=True)
-        raise SystemExit(f"macOS reminder audio generation failed: {synthesis.stderr.strip()}")
+    alarm_script = support_dir / "alarm-reminder.sh"
+    temporary_script = support_dir / "alarm-reminder.sh.tmp"
+    shutil.copyfile(bundled_script, temporary_script)
+    temporary_script.chmod(0o700)
+    temporary_script.replace(alarm_script)
     calendar: dict[str, int] = {"Hour": trigger.hour, "Minute": trigger.minute}
     if schedule == "once":
         calendar.update({"Month": trigger.month, "Day": trigger.day})
@@ -77,16 +72,15 @@ def macos_voice_reminder(
         "ProgramArguments": [
             "/bin/bash",
             str(alarm_script),
-            str(audio_path),
+            message,
             str(repeat),
             cleanup_label,
             cleanup_plist,
-            str(audio_path) if schedule == "once" else "",
         ],
         "StartCalendarInterval": calendar,
         "RunAtLoad": False,
-        "StandardOutPath": str(reminder_dir / f"{reminder_id}.out.log"),
-        "StandardErrorPath": str(reminder_dir / f"{reminder_id}.error.log"),
+        "StandardOutPath": str(support_dir / f"{reminder_id}.out.log"),
+        "StandardErrorPath": str(support_dir / f"{reminder_id}.error.log"),
     }
     with plist_path.open("wb") as handle:
         plistlib.dump(payload, handle)
@@ -99,7 +93,6 @@ def macos_voice_reminder(
     )
     if result.returncode != 0:
         plist_path.unlink(missing_ok=True)
-        audio_path.unlink(missing_ok=True)
         raise SystemExit(f"macOS scheduled voice reminder failed: {result.stderr.strip()}")
     return label
 
@@ -230,7 +223,8 @@ def create(args: argparse.Namespace) -> dict:
             args.repeat,
             args.schedule,
         )
-        backend = "macos-launchd-audio"
+        backend = "macos-launchd-live-voice"
+        audio_pre_generated = False
     elif system == "Windows":
         native_id = windows_reminder(
             workspace,
@@ -242,6 +236,7 @@ def create(args: argparse.Namespace) -> dict:
             args.schedule,
         )
         backend = "windows-task-scheduler-audio"
+        audio_pre_generated = True
     else:
         raise SystemExit("system reminder fallback currently supports macOS and Windows only")
     result = {
@@ -252,7 +247,8 @@ def create(args: argparse.Namespace) -> dict:
         "title": args.title.strip(),
         "trigger_at": trigger.isoformat(timespec="minutes"),
         "voice": True,
-        "audio_pre_generated": True,
+        "audio_pre_generated": audio_pre_generated,
+        "synthesis_at_trigger": not audio_pre_generated,
         "repeat": args.repeat,
         "schedule": args.schedule,
     }

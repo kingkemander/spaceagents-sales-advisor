@@ -1,6 +1,6 @@
 #!/bin/bash
 # Compatibility entry for the standalone SalesVoiceAlarm Skill.
-# Preferred plugin entry: cli.py system-reminder ...
+# Compatibility entry. The CLI deploys the protected-location player and schedules live speech.
 
 set -euo pipefail
 

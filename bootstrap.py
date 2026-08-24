@@ -18,12 +18,12 @@ from datetime import datetime
 from pathlib import Path
 
 
-VERSION = "0.13.0"
+VERSION = "0.13.1"
 RUNTIME_URL = (
     "https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/"
-    "v0.13.0/spaceagents-sales-advisor-runtime-v0.13.0.zip"
+    "v0.13.1/spaceagents-sales-advisor-runtime-v0.13.1.zip"
 )
-RUNTIME_SHA256 = "cb128a26cc8f684914b30fdc7c953a7f5b20ed65d1c50e7e1fa5635b8651110e"
+RUNTIME_SHA256 = "11ed4622d6820181607d6c3c7756def0223e60f373d1c2dbec0240b13c35b188"
 MANAGED_AGENT_MARKER = "<!-- managed-by-spaceagents-sales-advisor -->"
 
 
@@ -90,7 +90,7 @@ def valid_runtime(path: Path) -> bool:
 
 
 def download(url: str, destination: Path) -> None:
-    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.13.0"})
+    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.13.1"})
     with urllib.request.urlopen(request, timeout=60) as response, destination.open("wb") as output:
         shutil.copyfileobj(response, output)
 
