@@ -40,6 +40,7 @@ def main() -> int:
         "pipeline/reports",
         "exports/spacekb",
         "growth/reviews",
+        "prospects",
         "logs",
     ]:
         path = root / rel
@@ -65,6 +66,27 @@ def main() -> int:
             indent=2,
         )
         + "\n",
+        "config/sales-profile.json": json.dumps(
+            {
+                "schema_version": 1,
+                "updated_at": "",
+                "business": "",
+                "target_customer": "",
+                "product": "",
+                "sales_cycle": "",
+                "current_goal": "",
+                "region": "",
+                "industry": "",
+                "skipped_fields": [],
+            },
+            ensure_ascii=False,
+            indent=2,
+        ) + "\n",
+        "config/coach-preferences.json": json.dumps(
+            {"schema_version": 1, "updated_at": "", "last_feedback": "", "last_feedback_at": ""},
+            ensure_ascii=False,
+            indent=2,
+        ) + "\n",
         "indexes/customer-index.json": json.dumps(
             {"schema_version": 1, "updated_at": now_iso(), "customers": []},
             ensure_ascii=False,
@@ -93,6 +115,13 @@ def main() -> int:
         )
         + "\n",
         "indexes/ingestion-ledger.jsonl": "",
+        "indexes/conversation-events.jsonl": "",
+        "indexes/suggestion-queue.json": json.dumps(
+            {"schema_version": 1, "updated_at": now_iso(), "suggestions": []}, ensure_ascii=False, indent=2
+        ) + "\n",
+        "prospects/index.json": json.dumps(
+            {"schema_version": 1, "updated_at": now_iso(), "candidates": []}, ensure_ascii=False, indent=2
+        ) + "\n",
         "dashboard/dashboard-data.json": json.dumps(
             {"schema_version": 1, "generated_at": None, "date": None, "customers": []},
             ensure_ascii=False,

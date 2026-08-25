@@ -18,12 +18,12 @@ from datetime import datetime
 from pathlib import Path
 
 
-VERSION = "0.13.1"
+VERSION = "0.14.0"
 RUNTIME_URL = (
     "https://github.com/kingkemander/spaceagents-sales-advisor/releases/download/"
-    "v0.13.1/spaceagents-sales-advisor-runtime-v0.13.1.zip"
+    "v0.14.0/spaceagents-sales-advisor-runtime-v0.14.0.zip"
 )
-RUNTIME_SHA256 = "11ed4622d6820181607d6c3c7756def0223e60f373d1c2dbec0240b13c35b188"
+RUNTIME_SHA256 = "8faded883683f6986293d7ff26db4369e75d60fba103b8f993974aa0fc966979"
 MANAGED_AGENT_MARKER = "<!-- managed-by-spaceagents-sales-advisor -->"
 
 
@@ -66,6 +66,7 @@ def valid_runtime(path: Path) -> bool:
         path / "sa_sales_advisor/system_reminder.py",
         path / "sa_sales_advisor/company_radar.py",
         path / "sa_sales_advisor/company_radar_confirm.py",
+        path / "sa_sales_advisor/proactive_coach.py",
         path / "scripts/voice-alarm/macos/alarm-reminder.sh",
         path / "scripts/voice-alarm/macos/schedule-alarm.sh",
         path / "sa_sales_advisor/templates/dashboard-template.html",
@@ -83,6 +84,7 @@ def valid_runtime(path: Path) -> bool:
         path / "playbooks/coach-sales-growth/PLAYBOOK.md",
         path / "playbooks/manage-sales-pipeline/PLAYBOOK.md",
         path / "playbooks/company-intelligence-radar/PLAYBOOK.md",
+        path / "playbooks/proactive-sales-coach/PLAYBOOK.md",
         path / "sa_sales_advisor/templates/sales-advisor-agent.md",
         path / "VERSION",
     ]
@@ -90,7 +92,7 @@ def valid_runtime(path: Path) -> bool:
 
 
 def download(url: str, destination: Path) -> None:
-    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.13.1"})
+    request = urllib.request.Request(url, headers={"User-Agent": "SpaceAgents-Sales-Advisor/0.14.0"})
     with urllib.request.urlopen(request, timeout=60) as response, destination.open("wb") as output:
         shutil.copyfileobj(response, output)
 

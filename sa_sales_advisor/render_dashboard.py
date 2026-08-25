@@ -142,6 +142,21 @@ def company_intelligence(root: Path, today: date) -> tuple[dict, dict]:
     return verified, pending
 
 
+def coach_suggestions(root: Path) -> list[dict]:
+    path = root / "indexes/suggestion-queue.json"
+    if not path.is_file():
+        return []
+    try:
+        values = json.loads(path.read_text(encoding="utf-8")).get("suggestions", [])
+    except (ValueError, OSError):
+        return []
+    rank = {"high": 0, "medium": 1, "low": 2}
+    return sorted(
+        [item for item in values if item.get("status") == "pending"],
+        key=lambda item: (rank.get(item.get("priority"), 3), item.get("created_at", "")),
+    )[:3]
+
+
 def parse_day(value):
     if not value:
         return None
@@ -181,6 +196,7 @@ def main() -> int:
     today = date.fromisoformat(args.date) if args.date else date.today()
     customers = []
     intelligence, intelligence_pending = company_intelligence(root, today)
+    suggestions = coach_suggestions(root)
     stage_counts = {stage: 0 for stage in STAGES}
     stage_amounts = {stage: 0.0 for stage in STAGES}
     open_amount = 0.0
@@ -233,6 +249,7 @@ def main() -> int:
         "date": today.isoformat(),
         "customers": customers,
         "sales_voice": sales_voice_profile(root),
+        "coach_suggestions": clean_public_value(suggestions),
         "pipeline": {
             "stages": [{"name": stage, "count": stage_counts[stage], "amount": round(stage_amounts[stage], 2)} for stage in STAGES],
             "open_amount": round(open_amount, 2),

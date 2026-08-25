@@ -34,6 +34,7 @@ REQUIRED_RUNTIME_FILES = [
     "sa_sales_advisor/system_reminder.py",
     "sa_sales_advisor/company_radar.py",
     "sa_sales_advisor/company_radar_confirm.py",
+    "sa_sales_advisor/proactive_coach.py",
     "scripts/voice-alarm/macos/alarm-reminder.sh",
     "scripts/voice-alarm/macos/schedule-alarm.sh",
     "sa_sales_advisor/image_batch.py",
@@ -55,6 +56,7 @@ REQUIRED_RUNTIME_FILES = [
     "playbooks/coach-sales-growth/PLAYBOOK.md",
     "playbooks/manage-sales-pipeline/PLAYBOOK.md",
     "playbooks/company-intelligence-radar/PLAYBOOK.md",
+    "playbooks/proactive-sales-coach/PLAYBOOK.md",
     "VERSION",
 ]
 

@@ -265,6 +265,7 @@
           <section class="panel"><div class="panelhead"><h2>今日完成度</h2><span class="subtle" id="progressText"></span></div><div class="progressmeta"><b id="progressNumber">0%</b><span class="subtle">保持稳定节奏</span></div><div class="progress"><i id="progress"></i></div></section>
           <section class="panel"><div class="panelhead"><h2>换个思路</h2><button class="btn" data-switch-growth>浏览灵感</button></div><div class="focus"><small>VALUE FIRST</small><b>先提供价值，再询问进度</b><p>这是一种可选视角。结合客户当下状态判断，不必机械套用。</p></div></section>
           <section class="panel"><div class="panelhead"><h2>客户资料完整度</h2><span class="subtle" id="gapSummary"></span></div><div class="focus"><small>INFORMATION GAPS</small><b id="gapHeadline">正在检查客户资料</b><p id="gapAdvice">客户卡中会提示下一次最值得补问的信息。</p></div></section>
+          <section class="panel"><div class="panelhead"><h2>建议处理</h2><span class="subtle" id="coachSuggestionCount"></span></div><div class="focus"><small>SALES PRIORITIES</small><b id="coachSuggestionTitle">当前没有新的建议</b><p id="coachSuggestionAdvice">客户变化后会在这里汇总值得优先处理的事项。</p></div></section>
           <section class="panel"><div class="panelhead"><h2>个人表达资料库</h2><button class="btn" data-switch-voice>查看口吻</button></div><div class="voicebrief"><div class="voicebriefrow"><strong id="voiceBriefLevel">待建立</strong><span id="voiceBriefSamples">0 条样本</span></div><div class="voiceprogress"><i id="voiceBriefProgress"></i></div><p id="voiceBriefNext">补充本人表达样本后，回复会逐渐更像本人。</p></div></section>
         </aside>
       </div>
@@ -445,6 +446,12 @@
       document.querySelector('#gapHeadline').textContent=incomplete.length?totalGaps+' 项关键信息待补':'当前客户资料较完整';
       document.querySelector('#gapAdvice').textContent=incomplete.length?'客户卡会优先显示最适合在下一次沟通中补问的问题。':'继续在新沟通后更新客户资料即可。';
     }
+    function renderCoachSuggestions(){
+      const values=DATA.coach_suggestions||[];
+      document.querySelector('#coachSuggestionCount').textContent=values.length?values.length+' 项待处理':'已清空';
+      document.querySelector('#coachSuggestionTitle').textContent=values.length?values[0].title:'当前没有新的建议';
+      document.querySelector('#coachSuggestionAdvice').textContent=values.length?(values[0].reason+'。建议：'+values[0].action):'客户变化后会在这里汇总值得优先处理的事项。';
+    }
     function money(value){return new Intl.NumberFormat('zh-CN',{style:'currency',currency:'CNY',maximumFractionDigits:0}).format(Number(value)||0)}
     function renderPipeline(){
       const pipeline=DATA.pipeline||{},stages=pipeline.stages||[],stageTones=['#7295ec','#4f7be9','#3569e8','#2456d0','#18855d','#c83d4b'];
@@ -452,7 +459,7 @@
       document.querySelector('#pipelineStages').innerHTML=stages.map((x,i)=>'<article class="funnelstage" style="--stage-tone:'+stageTones[i]+'"><small>'+esc(x.name)+'</small><b>'+esc(x.count)+'</b><span>'+money(x.amount)+'</span></article>').join('');
       const rows=DATA.customers||[];document.querySelector('#pipelineRows').innerHTML=rows.length?rows.map(x=>'<tr><td class="customername">'+esc(x.name)+'</td><td><span class="stagepill '+(x.pipeline_stage==='赢单'?'won':x.pipeline_stage==='输单'?'lost':'')+'">'+esc(x.pipeline_stage||'初步接触')+'</span></td><td>'+money(x.opportunity_amount)+'</td><td>'+esc(x.win_probability||0)+'%</td><td>'+esc(x.expected_close_date||'待确认')+'</td><td>'+esc(formatDate(x.next_followup_at))+'</td><td>'+esc(x.next_action||'确认下一步')+'</td></tr>').join(''):'<tr><td colspan="7">暂无销售机会。录入新线索后会自动显示在这里。</td></tr>';
     }
-    function render(){renderFilters();renderCards();renderProgress();updateRecommendation();renderVoice();renderGapSummary();renderPipeline()}
+    function render(){renderFilters();renderCards();renderProgress();updateRecommendation();renderVoice();renderGapSummary();renderCoachSuggestions();renderPipeline()}
     document.querySelector('#search').oninput=e=>applySearch(e.target.value);
     const glass=document.querySelector('#glassBar');
     glass.onpointermove=e=>{const r=glass.getBoundingClientRect();glass.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%')};
